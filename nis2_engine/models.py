@@ -48,6 +48,10 @@ class Entity:
     employees: int
     annual_turnover_eur: float
     is_public_body: bool = False
+    # Prestador de serviços de confiança qualificados, registo de TLD, ou
+    # prestador de serviço de sistema de nomes de domínio (DNS) — qualifica-se
+    # como entidade essencial independentemente da dimensão (DL 125/2025).
+    is_dns_tld_or_trust_service_provider: bool = False
 
     def meets_size_threshold(self) -> bool:
         """Regra de dimensão: >=50 trabalhadores ou >10M€ de volume de negócios."""

@@ -14,11 +14,16 @@ TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "delivera
 
 
 def main() -> None:
+    # Nota: "turismo" não consta dos Anexos I/II do DL 125/2025 (ver
+    # nis2_engine/classification.py), por isso o exemplo usa uma câmara
+    # municipal — relevante para o mercado autárquico do Algarve, e
+    # diretamente em âmbito como entidade pública relevante.
     entity = Entity(
-        name="Grupo Hoteleiro Algarve, Lda.",
-        sector="turismo",
-        employees=80,
-        annual_turnover_eur=12_000_000,
+        name="Câmara Municipal de Exemplo",
+        sector="administracao_publica",
+        employees=300,
+        annual_turnover_eur=0,
+        is_public_body=True,
     )
 
     entity_type = classify_entity(entity)

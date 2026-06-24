@@ -18,7 +18,7 @@ def test_full_implementation_yields_100_percent_score():
 
 def test_no_answers_yields_zero_score_and_all_gaps():
     controls = load_controls()
-    entity = Entity(name="Grupo Hoteleiro Algarve", sector="turismo", employees=80, annual_turnover_eur=12_000_000)
+    entity = Entity(name="Distribuidora Alimentar", sector="alimentacao", employees=80, annual_turnover_eur=12_000_000)
     target_level = ComplianceLevel.SUBSTANCIAL
 
     result = run_assessment(entity, target_level, controls, answers=[])
@@ -44,7 +44,7 @@ def test_gaps_are_sorted_unimplemented_first_by_priority():
 
 def test_basico_level_excludes_non_required_controls():
     controls = load_controls()
-    entity = Entity(name="PME", sector="turismo", employees=60, annual_turnover_eur=5_000_000)
+    entity = Entity(name="PME", sector="alimentacao", employees=60, annual_turnover_eur=5_000_000)
     target_level = ComplianceLevel.BASICO
 
     result = run_assessment(entity, target_level, controls, answers=[])
