@@ -1,0 +1,19 @@
+id: DET-01
+title: Monitorização de eventos de segurança
+description: >
+  Recolha e análise contínua de logs e eventos de segurança para deteção de
+  atividade anómala (ex: SIEM, NSM).
+qnrcs_function: Detetar
+crosswalk:
+  nis2_article: ["Art. 21(2)(b)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.16"]
+  cis_controls_v8: ["8.2", "8.11"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: tecnica_automatizada
+evidence_contract:
+  source_hint: "SIEM/NSM (ex: Wazuh, Security Onion, ntopng)"
+  fields: ["log_sources_count", "coverage_pct", "alerts_last_30d", "checked_at"]

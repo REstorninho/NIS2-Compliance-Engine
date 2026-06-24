@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NIS2 Control",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "qnrcs_function",
+    "levels",
+    "evidence_type"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z]+-[0-9]+$",
+      "description": "Identificador estável do controlo, ex: ACC-01, IR-03"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "qnrcs_function": {
+      "type": "string",
+      "enum": ["Governar", "Identificar", "Proteger", "Detetar", "Responder", "Recuperar"],
+      "description": "Função do QNRCS / NIST CSF 2.0 a que o controlo pertence"
+    },
+    "crosswalk": {
+      "type": "object",
+      "properties": {
+        "nis2_article": {"type": "array", "items": {"type": "string"}},
+        "regulamento_756_2026": {"type": "array", "items": {"type": "string"}},
+        "iso27001_annex_a": {"type": "array", "items": {"type": "string"}},
+        "cis_controls_v8": {"type": "array", "items": {"type": "string"}},
+        "rgpd": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "levels": {
+      "type": "object",
+      "description": "Indica se o controlo é exigido em cada nível de conformidade da matriz de risco",
+      "required": ["basico", "substancial", "elevado"],
+      "properties": {
+        "basico": {"type": "boolean"},
+        "substancial": {"type": "boolean"},
+        "elevado": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "evidence_type": {
+      "type": "string",
+      "enum": ["documental", "tecnica_automatizada", "tecnica_manual", "organizacional"],
+      "description": "Tipo de evidência esperada para demonstrar implementação"
+    },
+    "evidence_contract": {
+      "type": "object",
+      "description": "Contrato de dados que uma fonte de evidência externa (scans, EDR, etc.) deve respeitar para satisfazer este controlo",
+      "properties": {
+        "source_hint": {"type": "string"},
+        "fields": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,16 @@
+id: IDN-02
+title: Avaliação periódica de risco
+description: >
+  Realização de avaliações periódicas de risco de cibersegurança, incluindo
+  risco da cadeia de abastecimento e de fornecedores.
+qnrcs_function: Identificar
+crosswalk:
+  nis2_article: ["Art. 21(2)(a)", "Art. 21(2)(d)"]
+  regulamento_756_2026: ["Anexo II", "Anexo III"]
+  iso27001_annex_a: ["A.5.7", "A.5.19"]
+  cis_controls_v8: ["7.1"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: documental

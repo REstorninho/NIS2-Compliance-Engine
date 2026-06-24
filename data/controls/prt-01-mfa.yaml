@@ -1,0 +1,19 @@
+id: PRT-01
+title: Autenticação multifator (MFA)
+description: >
+  Utilização de soluções de autenticação multifator ou de autenticação
+  contínua para acesso a sistemas críticos.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(j)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.5"]
+  cis_controls_v8: ["6.3", "6.5"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: tecnica_automatizada
+evidence_contract:
+  source_hint: "Identity provider / EDR (ex: Entra ID, Wazuh)"
+  fields: ["accounts_total", "accounts_with_mfa", "checked_at"]

@@ -1,0 +1,16 @@
+id: PRT-03
+title: Segmentação de redes
+description: >
+  Separação de redes críticas/OT de redes corporativas e de redes de
+  convidados, limitando a propagação lateral de incidentes.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(b)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.22"]
+  cis_controls_v8: ["12.2"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: tecnica_manual

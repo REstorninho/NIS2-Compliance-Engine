@@ -1,0 +1,17 @@
+id: RSP-01
+title: Plano de resposta a incidentes e notificação ao CNCS
+description: >
+  Plano formal de resposta a incidentes que cumpra o regime de notificação ao
+  CNCS via MyCiber: alerta inicial em 24h e relatório detalhado em 72h, mais
+  relatório final.
+qnrcs_function: Responder
+crosswalk:
+  nis2_article: ["Art. 23"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.5.24", "A.5.26"]
+  cis_controls_v8: ["17.1", "17.4"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: documental

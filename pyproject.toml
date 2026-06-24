@@ -1,0 +1,22 @@
+[project]
+name = "nis2-engine"
+version = "0.1.0"
+description = "Motor de classificação, maturidade e gap-analysis para conformidade NIS2 (QNRCS/ISO27001/CIS)"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+    "jsonschema>=4.21",
+    "jinja2>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["nis2_engine*"]

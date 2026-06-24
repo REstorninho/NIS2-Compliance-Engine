@@ -1,0 +1,40 @@
+# Relatório de Gap-Analysis NIS2 — {{ result.entity.name }}
+
+**Setor:** {{ result.entity.sector }}
+**Nível de conformidade exigido:** {{ result.target_level.value | capitalize }}
+**Score de conformidade:** {{ result.score_pct }}%
+
+## Resumo executivo
+
+A entidade **{{ result.entity.name }}** foi avaliada quanto ao cumprimento das
+medidas mínimas exigidas para o nível **{{ result.target_level.value }}** da
+matriz de risco do Regulamento n.º 756/2026. Dos controlos aplicáveis, foram
+identificados **{{ result.gaps | rejectattr("implemented") | list | length }}**
+gaps por remediar.
+
+## Gaps por prioridade
+
+{% for gap in result.gaps if not gap.implemented %}
+### [{{ gap.priority | upper }}] {{ gap.control.id }} — {{ gap.control.title }}
+
+- **Função QNRCS:** {{ gap.control.qnrcs_function }}
+- **Base legal:** {{ gap.control.crosswalk.nis2_article | join(", ") }}
+- **ISO 27001 (Anexo A):** {{ gap.control.crosswalk.iso27001_annex_a | join(", ") }}
+- **CIS Controls v8:** {{ gap.control.crosswalk.cis_controls_v8 | join(", ") }}
+- **Tipo de evidência esperada:** {{ gap.control.evidence_type }}
+
+{{ gap.control.description }}
+
+{% endfor %}
+
+## Controlos conformes
+
+{% for gap in result.gaps if gap.implemented %}
+- ✅ {{ gap.control.id }} — {{ gap.control.title }}
+{% endfor %}
+
+## Controlos não aplicáveis ao nível-alvo
+
+{% for control in result.not_applicable %}
+- {{ control.id }} — {{ control.title }}
+{% endfor %}
