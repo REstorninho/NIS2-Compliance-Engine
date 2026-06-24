@@ -1,0 +1,16 @@
+# Statement of Applicability — {{ soa.entity.name }}
+
+**Nível de conformidade:** {{ soa.target_level.value | capitalize }}
+**Data:** {{ generated_at }}
+
+| ID | Controlo | Função QNRCS | Aplicável | Implementado | Justificação / Evidência |
+|----|----------|--------------|-----------|---------------|---------------------------|
+{% for entry in soa.entries -%}
+| {{ entry.control.id }} | {{ entry.control.title }} | {{ entry.control.qnrcs_function }} | {{ "Sim" if entry.applicable else "Não" }} | {{ "Sim" if entry.implemented else ("N/A" if not entry.applicable else "Não") }} | {{ entry.justification or entry.evidence_ref or "—" }} |
+{% endfor %}
+
+## Resumo
+
+- Controlos aplicáveis: {{ soa.entries | selectattr("applicable") | list | length }}
+- Controlos implementados: {{ soa.entries | selectattr("implemented") | list | length }}
+- Controlos não aplicáveis ao nível-alvo: {{ soa.entries | rejectattr("applicable") | list | length }}

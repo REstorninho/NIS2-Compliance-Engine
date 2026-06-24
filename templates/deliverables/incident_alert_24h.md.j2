@@ -1,0 +1,29 @@
+# Alerta Inicial de Incidente — MyCiber
+
+**Entidade:** {{ incident.entity.name }}
+**ID do incidente (interno):** {{ incident.incident_id }}
+**Data/hora de deteção:** {{ incident.detected_at.strftime("%Y-%m-%d %H:%M") }}
+**Prazo legal (24h, Art. 23 DL 125/2025):** {{ deadlines.alerta_inicial.strftime("%Y-%m-%d %H:%M") }}
+**Gravidade preliminar:** {{ incident.severity | upper }}
+
+## Descrição preliminar
+
+{{ incident.description }}
+
+## Sistemas afetados (preliminar)
+
+{% for system in incident.affected_systems %}
+- {{ system }}
+{% endfor %}
+
+## Indício de efeito transfronteiriço
+
+{{ "Sim" if incident.cross_border_effect else "Não identificado nesta fase" }}
+
+## Próximos passos
+
+- Relatório detalhado a submeter via MyCiber até **{{ deadlines.relatorio_detalhado.strftime("%Y-%m-%d %H:%M") }}** (72h).
+- Relatório final a submeter até **{{ deadlines.relatorio_final.strftime("%Y-%m-%d %H:%M") }}** (30 dias após o relatório detalhado).
+
+---
+*Gerado automaticamente — a submissão na plataforma MyCiber é da responsabilidade do responsável de cibersegurança/ponto de contacto designado.*

@@ -19,8 +19,21 @@ ISO/IEC 27001:2022 e CIS Controls v8.
   - `assessment.py` — motor de maturidade: cruza respostas com os controlos
     exigidos para o nível do cliente, calcula gap-analysis e roadmap.
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
-  (gap report, Statement of Applicability) consumíveis pelo SysReptor.
-- `tests/` — testes do motor.
+  consumíveis pelo SysReptor: gap report, Statement of Applicability, e o
+  alerta inicial (24h) / relatório detalhado (72h) do regime de notificação
+  de incidentes ao CNCS via MyCiber.
+- `tests/` — testes do motor (24 testes).
+- `examples/demo_deliverables.py` — demo end-to-end: classificação →
+  assessment → SoA → alerta de incidente.
+
+## Estado de validação jurídica
+
+Os setores e níveis em `data/controls/` e `nis2_engine/classification.py`
+foram confirmados via fontes secundárias (CMS, Crowe, PWC) — o acesso direto
+ao texto do Diário da República está bloqueado pela política de rede desta
+sessão (DRE devolve 403 ao proxy). **Antes de usar com clientes reais**, os
+setores, exceções de dimensão e medidas mínimas devem ser validados
+artigo-a-artigo contra o Regulamento n.º 756/2026 e o DL 125/2025 publicados.
 
 ## Fora de âmbito deste repositório
 

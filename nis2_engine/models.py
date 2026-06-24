@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 
 
@@ -80,3 +81,42 @@ class AssessmentResult:
     score_pct: float
     gaps: list[GapItem]
     not_applicable: list[Control]
+
+
+@dataclass
+class SoAEntry:
+    """Linha da Statement of Applicability: um controlo, é aplicável ou não, e
+    com que estado de implementação, à semelhança do Anexo A da ISO 27001."""
+
+    control: Control
+    applicable: bool
+    implemented: bool
+    justification: str = ""
+    evidence_ref: str | None = None
+
+
+@dataclass
+class StatementOfApplicability:
+    entity: Entity
+    target_level: ComplianceLevel
+    entries: list[SoAEntry]
+
+
+@dataclass
+class IncidentNotification:
+    """Dados de um incidente para gerar os deliverables do regime de
+    notificação ao CNCS via MyCiber (DL 125/2025, Art. 23): alerta inicial em
+    24h, relatório detalhado em 72h, e relatório final em 1 mês."""
+
+    incident_id: str
+    entity: Entity
+    detected_at: datetime
+    severity: str  # "baixo", "medio", "alto", "critico"
+    description: str
+    affected_systems: list[str] = field(default_factory=list)
+    impact_summary: str = ""
+    indicators_of_compromise: list[str] = field(default_factory=list)
+    cross_border_effect: bool = False
+    root_cause: str = ""
+    mitigation_actions: list[str] = field(default_factory=list)
+    status: str = "em_curso"
