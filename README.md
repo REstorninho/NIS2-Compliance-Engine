@@ -45,7 +45,7 @@ ISO/IEC 27001:2022 e CIS Controls v8.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (61 testes).
+- `tests/` — testes do motor (67 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -76,9 +76,16 @@ linha com o texto oficial publicado.
 
 ## Utilização via CLI
 
-Depois de `pip install -e .`, fica disponível o comando `nis2`:
+Depois de `pip install -e .`, fica disponível o comando `nis2`. Erros comuns
+(ficheiro em falta, campo obrigatório por preencher, YAML inválido) devolvem
+uma mensagem clara em `stderr` e código de saída 1 — não um *traceback*
+Python. `nis2 --version` mostra a versão instalada.
 
 ```bash
+# 0. Consultar o catálogo de controlos QNRCS antes de preencher o entity.yaml
+#    (filtrável por --level ou --function)
+nis2 list-controls --level substancial
+
 # 1. Classificar a entidade e gerar o relatório de autoidentificação MyCiber
 nis2 classify examples/entity_camara.yaml -o out/self_identification.md
 

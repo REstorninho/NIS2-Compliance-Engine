@@ -3,9 +3,11 @@ from __future__ import annotations
 import argparse
 import sys
 from datetime import datetime
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import yaml
+from jsonschema.exceptions import ValidationError
 
 from .assessment import run_assessment
 from .audit import build_audit_report, build_validation_checklist
@@ -308,11 +310,43 @@ def cmd_audit(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_list_controls(args: argparse.Namespace) -> int:
+    """Lista o catálogo de controlos QNRCS, com filtro opcional por nível
+    exigido ou função — útil para consultar o que vai ser pedido antes de
+    preencher o `entity.yaml`/`answers.yaml`, sem ter de abrir `data/controls/`."""
+    controls = load_controls()
+    if args.level:
+        level = ComplianceLevel(args.level)
+        controls = [c for c in controls if c.required_at(level)]
+    if args.function:
+        controls = [c for c in controls if c.qnrcs_function.lower() == args.function.lower()]
+    controls = sorted(controls, key=lambda c: c.id)
+
+    print(f"{'ID':<8} {'Função':<13} {'B/S/E':<6} Título")
+    print(f"{'-' * 8} {'-' * 13} {'-' * 6} {'-' * 40}")
+    for c in controls:
+        niveis = "".join(
+            letra if c.levels.get(nivel) else "·"
+            for letra, nivel in (("B", "basico"), ("S", "substancial"), ("E", "elevado"))
+        )
+        print(f"{c.id:<8} {c.qnrcs_function:<13} {niveis:<6} {c.title}")
+    print(f"\nTotal: {len(controls)} controlo(s).")
+    return 0
+
+
+def _version_string() -> str:
+    try:
+        return version("nis2-engine")
+    except PackageNotFoundError:
+        return "dev"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="nis2",
         description="Motor de conformidade NIS2 (DL 125/2025 + Regulamento 756/2026).",
     )
+    parser.add_argument("--version", action="version", version=f"nis2 {_version_string()}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_classify = sub.add_parser("classify", help="Classifica a entidade e (opcionalmente) gera o relatório de autoidentificação.")
@@ -367,13 +401,38 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_audit.set_defaults(func=cmd_audit)
 
+    p_list_controls = sub.add_parser(
+        "list-controls", help="Lista o catálogo de controlos QNRCS (filtrável por nível/função)."
+    )
+    p_list_controls.add_argument(
+        "--level", choices=[l.value for l in ComplianceLevel], help="Filtrar pelos controlos exigidos a este nível."
+    )
+    p_list_controls.add_argument("--function", help="Filtrar pela função QNRCS (ex.: Governar, Proteger).")
+    p_list_controls.set_defaults(func=cmd_list_controls)
+
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except FileNotFoundError as exc:
+        print(f"Erro: ficheiro não encontrado — {exc.filename or exc}", file=sys.stderr)
+        return 1
+    except KeyError as exc:
+        print(f"Erro: campo obrigatório em falta no ficheiro YAML — {exc.args[0]}", file=sys.stderr)
+        return 1
+    except yaml.YAMLError as exc:
+        print(f"Erro: YAML inválido — {exc}", file=sys.stderr)
+        return 1
+    except ValidationError as exc:
+        print(f"Erro: controlo não cumpre o schema esperado — {exc.message}", file=sys.stderr)
+        return 1
+    except ValueError as exc:
+        print(f"Erro: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

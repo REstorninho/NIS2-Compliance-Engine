@@ -208,3 +208,51 @@ def test_cli_history_no_snapshots_returns_error(tmp_path):
     history_dir = tmp_path / "history"
     history_dir.mkdir()
     assert main(["history", "Inexistente", "--history-dir", str(history_dir)]) == 1
+
+
+def test_cli_list_controls_lists_full_catalog(capsys):
+    assert main(["list-controls"]) == 0
+    captured = capsys.readouterr()
+    assert "GOV-01" in captured.out
+    assert "Total:" in captured.out
+
+
+def test_cli_list_controls_filters_by_level(capsys):
+    assert main(["list-controls", "--level", "basico"]) == 0
+    captured = capsys.readouterr()
+    assert "GOV-01" in captured.out
+
+
+def test_cli_list_controls_filters_by_function(capsys):
+    assert main(["list-controls", "--function", "Governar"]) == 0
+    captured = capsys.readouterr()
+    assert "Proteger" not in captured.out
+    assert "Governar" in captured.out
+
+
+def test_cli_missing_entity_file_returns_friendly_error(tmp_path, capsys):
+    missing = tmp_path / "nao_existe.yaml"
+    rc = main(["classify", str(missing)])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "não encontrado" in captured.err
+
+
+def test_cli_entity_missing_required_field_returns_friendly_error(tmp_path, capsys):
+    entity = _write(tmp_path / "entity.yaml", {"name": "X", "sector": "energia"})
+    rc = main(["classify", str(entity)])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "campo obrigatório" in captured.err
+
+
+def test_cli_version_flag(capsys):
+    raised = False
+    try:
+        main(["--version"])
+    except SystemExit as exc:
+        raised = True
+        assert exc.code == 0
+    assert raised
+    captured = capsys.readouterr()
+    assert "nis2" in captured.out
