@@ -1,0 +1,36 @@
+# Relatório de Evolução — {{ delta.entity_name }}
+
+**Período:** {{ delta.from_date }} → {{ delta.to_date }}
+
+## Resumo
+
+- **Score de conformidade:** {{ "+" if delta.score_delta >= 0 else "" }}{{ delta.score_delta }} p.p.
+- **Maturidade média:** {{ "+" if delta.maturity_delta >= 0 else "" }}{{ delta.maturity_delta }} p.p.
+
+## Evolução por função QNRCS
+
+| Função | Δ Maturidade (0-5) |
+|---|---|
+{% for function, delta_value in delta.maturity_by_function_delta.items() -%}
+| {{ function }} | {{ "+" if delta_value >= 0 else "" }}{{ delta_value }} |
+{% endfor %}
+
+## Controlos remediados desde o último assessment
+
+{% if delta.newly_implemented %}
+{% for control_id in delta.newly_implemented -%}
+- ✅ {{ control_id }}
+{% endfor %}
+{% else %}
+Nenhum controlo novo implementado neste período.
+{% endif %}
+
+## Regressões (controlos que deixaram de estar implementados)
+
+{% if delta.regressed %}
+{% for control_id in delta.regressed -%}
+- ⚠️ {{ control_id }}
+{% endfor %}
+{% else %}
+Sem regressões detetadas.
+{% endif %}

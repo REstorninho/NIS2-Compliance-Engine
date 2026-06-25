@@ -20,6 +20,14 @@ from .incident import compute_deadlines, NotificationDeadlines
 from .classification import required_compliance_level
 from .roadmap import build_remediation_roadmap, RemediationRoadmap, RoadmapPhase
 from .audit import build_audit_report, AuditReport
+from .history import (
+    AssessmentSnapshot,
+    ProgressDelta,
+    build_snapshot,
+    compare_snapshots,
+    load_snapshots,
+    save_snapshot,
+)
 from .reporting import (
     render_gap_report,
     render_roadmap,
@@ -31,6 +39,7 @@ from .reporting import (
     render_supplier_security_policy,
     render_bcdr_policy,
     render_audit_report,
+    render_progress_report,
 )
 
 __all__ = [
@@ -57,6 +66,12 @@ __all__ = [
     "RoadmapPhase",
     "build_audit_report",
     "AuditReport",
+    "AssessmentSnapshot",
+    "ProgressDelta",
+    "build_snapshot",
+    "compare_snapshots",
+    "load_snapshots",
+    "save_snapshot",
     "compute_deadlines",
     "render_gap_report",
     "render_roadmap",
@@ -68,4 +83,5 @@ __all__ = [
     "render_supplier_security_policy",
     "render_bcdr_policy",
     "render_audit_report",
+    "render_progress_report",
 ]

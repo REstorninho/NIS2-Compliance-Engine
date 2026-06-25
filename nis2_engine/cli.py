@@ -9,6 +9,7 @@ import yaml
 from .assessment import run_assessment
 from .audit import build_audit_report
 from .classification import classify_entity, required_compliance_level
+from .history import build_snapshot, compare_snapshots, load_snapshots, save_snapshot
 from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType
 from .reporting import (
@@ -16,6 +17,7 @@ from .reporting import (
     render_bcdr_policy,
     render_gap_report,
     render_incident_response_policy,
+    render_progress_report,
     render_roadmap,
     render_self_identification,
     render_soa,
@@ -148,6 +150,41 @@ def cmd_assess(args: argparse.Namespace) -> int:
     print(f"Conformidade:   {result.score_pct}% (maturidade média: {result.maturity_score_pct}%)")
     print(f"Gaps abertos:   {sum(1 for g in result.gaps if not g.implemented)}")
     print(f"Deliverables escritos em: {out_dir}/")
+
+    if args.history_dir:
+        snapshot = build_snapshot(result)
+        snapshot_path = save_snapshot(snapshot, Path(args.history_dir))
+        print(f"Snapshot de histórico guardado em: {snapshot_path}")
+    return 0
+
+
+def cmd_progress(args: argparse.Namespace) -> int:
+    """Compara os dois assessments mais recentes de uma entidade gravados no
+    histórico e gera um relatório de evolução (score, maturidade por função,
+    controlos remediados/regredidos)."""
+    history_dir = Path(args.history_dir)
+    snapshots = load_snapshots(history_dir, args.entity)
+    if len(snapshots) < 2:
+        print(
+            f"Histórico insuficiente para '{args.entity}': {len(snapshots)} snapshot(s) encontrado(s) "
+            f"em {history_dir}/ (são necessários pelo menos 2).",
+            file=sys.stderr,
+        )
+        return 1
+
+    old, new = snapshots[-2], snapshots[-1]
+    delta = compare_snapshots(old, new)
+
+    print(f"Entidade:              {delta.entity_name}")
+    print(f"Período:               {delta.from_date} → {delta.to_date}")
+    print(f"Δ Score:               {'+' if delta.score_delta >= 0 else ''}{delta.score_delta} p.p.")
+    print(f"Δ Maturidade:          {'+' if delta.maturity_delta >= 0 else ''}{delta.maturity_delta} p.p.")
+    print(f"Controlos remediados:  {len(delta.newly_implemented)}")
+    print(f"Regressões:            {len(delta.regressed)}")
+
+    if args.output:
+        Path(args.output).write_text(render_progress_report(delta), encoding="utf-8")
+        print(f"\nRelatório de evolução escrito em: {args.output}")
     return 0
 
 
@@ -213,7 +250,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_assess.add_argument("answers", help="Ficheiro YAML com as respostas ao questionário.")
     p_assess.add_argument("-o", "--output", default="out", help="Diretório de saída para os deliverables (default: ./out).")
     p_assess.add_argument("--level", choices=[l.value for l in ComplianceLevel], help="Forçar nível-alvo em vez do derivado da classificação.")
+    p_assess.add_argument("--history-dir", help="Diretório onde gravar um snapshot deste assessment (para comparação futura com 'nis2 progress').")
     p_assess.set_defaults(func=cmd_assess)
+
+    p_progress = sub.add_parser("progress", help="Compara os dois assessments mais recentes de uma entidade e gera um relatório de evolução.")
+    p_progress.add_argument("entity", help="Nome da entidade (igual ao usado no perfil YAML).")
+    p_progress.add_argument("--history-dir", required=True, help="Diretório com os snapshots gravados por 'nis2 assess --history-dir'.")
+    p_progress.add_argument("-o", "--output", help="Caminho para escrever o relatório de evolução (markdown).")
+    p_progress.set_defaults(func=cmd_progress)
 
     p_policies = sub.add_parser("policies", help="Gera o pacote de políticas chave (resposta a incidentes, fornecedores, BC/DR).")
     p_policies.add_argument("entity", help="Ficheiro YAML com o perfil da entidade.")

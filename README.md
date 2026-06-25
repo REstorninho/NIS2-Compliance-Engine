@@ -25,15 +25,20 @@ ISO/IEC 27001:2022 e CIS Controls v8.
     classificação setorial já foram confirmados artigo-a-artigo contra o
     texto oficial (campo `estado_validacao` em cada `Control`), e o que
     continua por validar via fontes secundárias.
+  - `history.py` — snapshots serializáveis de cada `AssessmentResult` (score,
+    maturidade por função, estado de cada controlo), gravados em disco com
+    timestamp; permite comparar a evolução de uma entidade entre dois
+    assessments (`nis2 progress`).
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
   consumíveis pelo SysReptor: gap report (com maturidade por função), roadmap
   de remediação faseado, Statement of Applicability, relatório de auditoria
-  jurídica, e o alerta inicial (24h) / relatório detalhado (72h) do regime de
-  notificação de incidentes ao CNCS via MyCiber.
+  jurídica, relatório de evolução entre assessments, e o alerta inicial (24h)
+  / relatório detalhado (72h) do regime de notificação de incidentes ao CNCS
+  via MyCiber.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (42 testes).
+- `tests/` — testes do motor (50 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -74,6 +79,11 @@ nis2 policies examples/entity_camara.yaml -o out/politicas --approver "Nome do R
 
 # 5. Ver o estado de rastreabilidade jurídica do corpus (confirmado vs. por validar)
 nis2 audit -o out/audit_report.md
+
+# 6. Gravar um snapshot do assessment para comparação futura, e mais tarde
+#    comparar os dois assessments mais recentes da mesma entidade
+nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/ --history-dir out/.history
+nis2 progress "Câmara Municipal de Exemplo" --history-dir out/.history -o out/relatorio_evolucao.md
 ```
 
 O fluxo típico de uma consultoria é: `classify` → `scaffold` → preencher o

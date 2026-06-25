@@ -91,3 +91,54 @@ def test_cli_audit_writes_report(tmp_path):
     assert out.exists()
     content = out.read_text(encoding="utf-8")
     assert "por validar" in content.lower() or "POR_VALIDAR" in content.upper()
+
+
+def test_cli_assess_with_history_dir_saves_snapshot(tmp_path):
+    entity = _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+    scaffold = tmp_path / "answers.yaml"
+    assert main(["scaffold", str(entity), "-o", str(scaffold)]) == 0
+
+    history_dir = tmp_path / "history"
+    out_dir = tmp_path / "out"
+    assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir), "--history-dir", str(history_dir)]) == 0
+    assert history_dir.exists()
+    assert len(list(history_dir.glob("*.json"))) == 1
+
+
+def test_cli_progress_requires_at_least_two_snapshots(tmp_path):
+    history_dir = tmp_path / "history"
+    history_dir.mkdir()
+    rc = main(["progress", "Energia SA", "--history-dir", str(history_dir)])
+    assert rc == 1
+
+
+def test_cli_progress_compares_two_assessments(tmp_path):
+    entity = _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+    scaffold = tmp_path / "answers.yaml"
+    assert main(["scaffold", str(entity), "-o", str(scaffold)]) == 0
+
+    history_dir = tmp_path / "history"
+    out_dir = tmp_path / "out"
+
+    assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir), "--history-dir", str(history_dir)]) == 0
+
+    answers = yaml.safe_load(scaffold.read_text(encoding="utf-8"))
+    for item in answers["answers"]:
+        item["implemented"] = True
+        item["maturity"] = 5
+    _write(scaffold, answers)
+
+    assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir), "--history-dir", str(history_dir)]) == 0
+    assert len(list(history_dir.glob("*.json"))) == 2
+
+    progress_out = tmp_path / "progress.md"
+    assert main(["progress", "Energia SA", "--history-dir", str(history_dir), "-o", str(progress_out)]) == 0
+    assert progress_out.exists()
+    content = progress_out.read_text(encoding="utf-8")
+    assert "Relatório de Evolução" in content
