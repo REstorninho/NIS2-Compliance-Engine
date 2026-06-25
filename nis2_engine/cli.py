@@ -18,6 +18,7 @@ from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType, IncidentNotification
 from .reporting import (
     render_audit_report,
+    render_classifier_form,
     render_validation_checklist_csv,
     render_bcdr_policy,
     render_evidence_plan,
@@ -342,6 +343,17 @@ def cmd_list_controls(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_form(args: argparse.Namespace) -> int:
+    """Gera um formulário HTML self-contained para classificar entidades quanto
+    ao âmbito NIS2 no browser (sem servidor), com histórico local e exportação
+    de YAML para alimentar `nis2 classify`/`scaffold`/`assess`."""
+    html = render_classifier_form(brand=args.brand)
+    _write_output(args.output, html)
+    print(f"Formulário de classificação escrito em: {args.output}")
+    print("Abre o ficheiro num browser para preencher o perfil e ver a classificação em tempo real.")
+    return 0
+
+
 def _version_string() -> str:
     try:
         return version("nis2-engine")
@@ -417,6 +429,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_list_controls.add_argument("--function", help="Filtrar pela função QNRCS (ex.: Governar, Proteger).")
     p_list_controls.set_defaults(func=cmd_list_controls)
+
+    p_form = sub.add_parser(
+        "form", help="Gera um formulário HTML para classificar entidades no browser (com histórico local)."
+    )
+    p_form.add_argument("-o", "--output", default="out/classificador.html", help="Caminho do HTML a gerar (default: ./out/classificador.html).")
+    p_form.add_argument("--brand", default="", help="Nome/marca do consultor a apresentar no formulário.")
+    p_form.set_defaults(func=cmd_form)
 
     return parser
 

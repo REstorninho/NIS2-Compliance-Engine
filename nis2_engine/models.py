@@ -48,6 +48,14 @@ class Control:
         return self.levels.get(level.value, False)
 
 
+# Regra de dimensão (DL 125/2025): uma entidade atinge o limiar se tiver pelo
+# menos SIZE_THRESHOLD_EMPLOYEES trabalhadores OU um volume de negócios anual
+# superior a SIZE_THRESHOLD_TURNOVER_EUR. Constantes nomeadas para servirem de
+# fonte de verdade única (motor + formulário HTML gerado por `nis2 form`).
+SIZE_THRESHOLD_EMPLOYEES = 50
+SIZE_THRESHOLD_TURNOVER_EUR = 10_000_000
+
+
 @dataclass
 class Entity:
     name: str
@@ -62,7 +70,10 @@ class Entity:
 
     def meets_size_threshold(self) -> bool:
         """Regra de dimensão: >=50 trabalhadores ou >10M€ de volume de negócios."""
-        return self.employees >= 50 or self.annual_turnover_eur > 10_000_000
+        return (
+            self.employees >= SIZE_THRESHOLD_EMPLOYEES
+            or self.annual_turnover_eur > SIZE_THRESHOLD_TURNOVER_EUR
+        )
 
 
 MATURITY_LABELS = {

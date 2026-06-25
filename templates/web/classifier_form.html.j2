@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ brand }} — Classificador de Âmbito NIS2</title>
+<style>
+  :root { --azul: #2b6cb0; --verde: #2f855a; --ambar: #b7791f; --cinza: #718096; --fundo: #f7fafc; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: var(--fundo); color: #1a202c; }
+  header { background: var(--azul); color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; opacity: .85; font-size: 13px; }
+  main { max-width: 980px; margin: 24px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; }
+  .card h2 { margin: 0 0 14px; font-size: 16px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 4px; }
+  input[type=text], input[type=number], select { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px; }
+  .check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-weight: 400; font-size: 13px; }
+  .check input { width: auto; }
+  .hint { font-size: 12px; color: var(--cinza); margin-top: 3px; }
+  .result { text-align: center; padding: 20px; border-radius: 10px; margin-bottom: 14px; }
+  .result .tipo { font-size: 22px; font-weight: 700; margin: 6px 0; }
+  .result .nivel { font-size: 14px; }
+  .r-essencial { background: #ebf8ff; border: 1px solid var(--azul); }
+  .r-importante { background: #f0fff4; border: 1px solid var(--verde); }
+  .r-publica { background: #faf5ff; border: 1px solid #805ad5; }
+  .r-fora { background: #fffaf0; border: 1px solid var(--ambar); }
+  .motivo { font-size: 13px; color: #4a5568; }
+  .motivo ul { margin: 8px 0 0; padding-left: 18px; }
+  button { cursor: pointer; border: none; border-radius: 6px; padding: 10px 14px; font-size: 14px; font-weight: 600; }
+  .btn-primary { background: var(--azul); color: #fff; }
+  .btn-ghost { background: #edf2f7; color: #2d3748; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #edf2f7; }
+  th { color: var(--cinza); font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+  .b-essencial { background: #ebf8ff; color: var(--azul); }
+  .b-importante { background: #f0fff4; color: var(--verde); }
+  .b-publica { background: #faf5ff; color: #805ad5; }
+  .b-fora { background: #fffaf0; color: var(--ambar); }
+  .vazio { color: var(--cinza); font-style: italic; font-size: 13px; }
+  footer { max-width: 980px; margin: 0 auto 40px; padding: 0 16px; font-size: 12px; color: var(--cinza); }
+  .aviso { background: #fffaf0; border: 1px solid #f6e05e; border-radius: 8px; padding: 12px; font-size: 12px; color: #744210; margin-top: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>{{ brand }} — Classificador de Âmbito NIS2</h1>
+  <p>Determinação provisória do tipo de entidade (DL 125/2025 + Regulamento n.º 756/2026). Tudo corre no teu browser — nenhum dado é enviado para fora.</p>
+</header>
+
+<script id="nis2-config" type="application/json">{{ config_json }}</script>
+
+<main>
+  <section class="card">
+    <h2>Perfil da entidade</h2>
+    <label for="name">Nome da entidade</label>
+    <input type="text" id="name" placeholder="Ex.: Câmara Municipal de Exemplo">
+
+    <label for="sector">Setor</label>
+    <select id="sector"></select>
+    <div class="hint" id="sector-hint"></div>
+
+    <label for="employees">Número de trabalhadores</label>
+    <input type="number" id="employees" min="0" value="0">
+
+    <label for="turnover">Volume de negócios anual (€)</label>
+    <input type="number" id="turnover" min="0" value="0">
+
+    <label class="check"><input type="checkbox" id="is_public_body"> É organismo da Administração Pública</label>
+    <label class="check"><input type="checkbox" id="is_trust"> É prestador de DNS / registo de TLD / serviços de confiança qualificados</label>
+
+    <div class="actions">
+      <button class="btn-primary" id="btn-save">Guardar no histórico</button>
+      <button class="btn-ghost" id="btn-yaml">Descarregar YAML (p/ CLI)</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Resultado (em tempo real)</h2>
+    <div id="result"></div>
+    <div class="motivo" id="motivo"></div>
+  </section>
+
+  <section class="card" style="grid-column: 1 / -1;">
+    <h2>Histórico de classificações</h2>
+    <div id="history"></div>
+    <div class="actions">
+      <button class="btn-ghost" id="btn-export">Exportar histórico (CSV)</button>
+      <button class="btn-ghost" id="btn-clear">Limpar histórico</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="aviso">
+    <strong>Aviso:</strong> esta classificação é <strong>provisória e de apoio à decisão</strong>. A autoidentificação na plataforma cria um registo provisório; a qualificação definitiva é da autoridade competente (CNCS ou autoridade setorial). As listas de setores ainda estão por validar artigo-a-artigo contra o texto oficial (Diário da República).
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var CFG = JSON.parse(document.getElementById("nis2-config").textContent);
+  var STORAGE_KEY = "nis2-classificacoes";
+
+  var el = function (id) { return document.getElementById(id); };
+
+  // Preenche o dropdown de setores a partir da config injetada pelo motor.
+  var sectorSelect = el("sector");
+  CFG.sectors.forEach(function (s) {
+    var opt = document.createElement("option");
+    opt.value = s.value;
+    opt.textContent = s.label + " (" + s.grupo + ")";
+    sectorSelect.appendChild(opt);
+  });
+
+  // Replica EXATAMENTE classify_entity() do motor Python (classification.py).
+  function classify(entity) {
+    if (entity.is_public_body) {
+      return { tipo: "entidade_publica_relevante", motivo: "Organismo da Administração Pública." };
+    }
+    if (entity.is_trust) {
+      return { tipo: "essencial", motivo: "Prestador de DNS/TLD/serviços de confiança — essencial independentemente da dimensão." };
+    }
+    var meetsSize = entity.employees >= CFG.size_employees || entity.turnover > CFG.size_turnover;
+    if (!meetsSize) {
+      return { tipo: "fora_de_ambito", motivo: "Não atinge a regra de dimensão (≥" + CFG.size_employees + " trab. OU >" + fmtEur(CFG.size_turnover) + ")." };
+    }
+    if (CFG.essenciais.indexOf(entity.sector) >= 0) {
+      return { tipo: "essencial", motivo: "Setor essencial (Anexo I) e atinge a regra de dimensão." };
+    }
+    if (CFG.importantes.indexOf(entity.sector) >= 0) {
+      return { tipo: "importante", motivo: "Setor importante (Anexo II) e atinge a regra de dimensão." };
+    }
+    return { tipo: "fora_de_ambito", motivo: "Setor não consta dos Anexos I/II — só entra em âmbito por via da cadeia de fornecimento." };
+  }
+
+  var LEVELS = CFG.level_mapping;
+  var META = {
+    essencial: { rotulo: "Essencial", cls: "essencial" },
+    importante: { rotulo: "Importante", cls: "importante" },
+    entidade_publica_relevante: { rotulo: "Entidade Pública Relevante", cls: "publica" },
+    fora_de_ambito: { rotulo: "Fora de âmbito", cls: "fora" }
+  };
+
+  function fmtEur(v) {
+    return new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
+  }
+
+  function readForm() {
+    return {
+      name: el("name").value.trim(),
+      sector: el("sector").value,
+      employees: parseInt(el("employees").value, 10) || 0,
+      turnover: parseFloat(el("turnover").value) || 0,
+      is_public_body: el("is_public_body").checked,
+      is_trust: el("is_trust").checked
+    };
+  }
+
+  function render() {
+    var entity = readForm();
+    var res = classify(entity);
+    var meta = META[res.tipo];
+    var nivel = LEVELS[res.tipo];
+    el("result").className = "result r-" + meta.cls;
+    el("result").innerHTML =
+      '<div>Classificação provisória</div>' +
+      '<div class="tipo">' + meta.rotulo + '</div>' +
+      (nivel ? '<div class="nivel">Nível de conformidade exigido: <strong>' + nivel + '</strong></div>'
+             : '<div class="nivel">Sem nível exigido</div>');
+    el("motivo").innerHTML = "<strong>Porquê:</strong> " + res.motivo;
+    var hint = CFG.sectorHints[entity.sector] || "";
+    el("sector-hint").textContent = hint;
+    return { entity: entity, res: res, nivel: nivel };
+  }
+
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function saveHistory(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  function renderHistory() {
+    var list = loadHistory();
+    var box = el("history");
+    if (!list.length) { box.innerHTML = '<p class="vazio">Sem classificações guardadas.</p>'; return; }
+    var rows = list.map(function (h, i) {
+      var meta = META[h.tipo];
+      return '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        '<td>' + escapeHtml(h.name || "(sem nome)") + '</td>' +
+        '<td>' + escapeHtml(h.sector) + '</td>' +
+        '<td>' + h.employees + '</td>' +
+        '<td>' + fmtEur(h.turnover) + '</td>' +
+        '<td><span class="badge b-' + meta.cls + '">' + meta.rotulo + '</span></td>' +
+        '<td>' + (h.nivel || "—") + '</td>' +
+        '<td>' + new Date(h.at).toLocaleString("pt-PT") + '</td>' +
+        '</tr>';
+    }).join("");
+    box.innerHTML =
+      '<table><thead><tr><th>#</th><th>Entidade</th><th>Setor</th><th>Trab.</th>' +
+      '<th>Volume</th><th>Classificação</th><th>Nível</th><th>Data</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function download(filename, text, mime) {
+    var blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // --- Eventos ---
+  ["name", "sector", "employees", "turnover", "is_public_body", "is_trust"].forEach(function (id) {
+    el(id).addEventListener("input", render);
+    el(id).addEventListener("change", render);
+  });
+
+  el("btn-save").addEventListener("click", function () {
+    var r = render();
+    var list = loadHistory();
+    list.push({
+      name: r.entity.name, sector: r.entity.sector, employees: r.entity.employees,
+      turnover: r.entity.turnover, is_public_body: r.entity.is_public_body,
+      is_trust: r.entity.is_trust, tipo: r.res.tipo, nivel: r.nivel || "", at: Date.now()
+    });
+    saveHistory(list);
+    renderHistory();
+  });
+
+  el("btn-yaml").addEventListener("click", function () {
+    var e = readForm();
+    var yaml =
+      "name: " + (e.name || "Entidade sem nome") + "\n" +
+      "sector: " + e.sector + "\n" +
+      "employees: " + e.employees + "\n" +
+      "annual_turnover_eur: " + e.turnover + "\n" +
+      "is_public_body: " + (e.is_public_body ? "true" : "false") + "\n" +
+      "is_dns_tld_or_trust_service_provider: " + (e.is_trust ? "true" : "false") + "\n";
+    var slug = (e.name || "entidade").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    download((slug || "entidade") + ".yaml", yaml, "text/yaml;charset=utf-8");
+  });
+
+  el("btn-export").addEventListener("click", function () {
+    var list = loadHistory();
+    var head = "nome,setor,trabalhadores,volume_negocios_eur,organismo_publico,dns_tld_confianca,classificacao,nivel_exigido,data\n";
+    var lines = list.map(function (h) {
+      return [
+        '"' + (h.name || "").replace(/"/g, '""') + '"', h.sector, h.employees, h.turnover,
+        h.is_public_body, h.is_trust, h.tipo, h.nivel || "", new Date(h.at).toISOString()
+      ].join(",");
+    }).join("\n");
+    download("historico_classificacoes.csv", head + lines + "\n", "text/csv;charset=utf-8");
+  });
+
+  el("btn-clear").addEventListener("click", function () {
+    if (confirm("Limpar todo o histórico de classificações guardado neste browser?")) {
+      localStorage.removeItem(STORAGE_KEY);
+      renderHistory();
+    }
+  });
+
+  render();
+  renderHistory();
+})();
+</script>
+</body>
+</html>

@@ -44,6 +44,8 @@ from .reporting import (
     render_maturity_radar,
     render_html_report,
     render_validation_checklist_csv,
+    render_classifier_form,
+    build_classifier_config,
 )
 from .charts import render_maturity_radar_svg
 
@@ -95,5 +97,7 @@ __all__ = [
     "render_maturity_radar",
     "render_html_report",
     "render_validation_checklist_csv",
+    "render_classifier_form",
+    "build_classifier_config",
     "render_maturity_radar_svg",
 ]

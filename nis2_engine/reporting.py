@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -9,11 +10,15 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .audit import VALIDATION_CHECKLIST_FIELDS, AuditReport
 from .charts import render_maturity_radar_svg
+from .classification import SETORES_ESSENCIAIS, SETORES_IMPORTANTES
 from .history import ProgressDelta
 from .incident import NotificationDeadlines, compute_deadlines
 from .models import (
     MATURITY_LABELS,
+    SIZE_THRESHOLD_EMPLOYEES,
+    SIZE_THRESHOLD_TURNOVER_EUR,
     AssessmentResult,
+    ComplianceLevel,
     Entity,
     EntityType,
     IncidentNotification,
@@ -23,6 +28,7 @@ from .roadmap import RemediationRoadmap
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "deliverables"
 _POLICIES_DIR = Path(__file__).resolve().parent.parent / "templates" / "policies"
+_WEB_DIR = Path(__file__).resolve().parent.parent / "templates" / "web"
 
 
 def _env() -> Environment:
@@ -40,6 +46,81 @@ def _policy_env() -> Environment:
         autoescape=select_autoescape(enabled_extensions=(), default=False),
         trim_blocks=False,
         lstrip_blocks=False,
+    )
+
+
+def _web_env() -> Environment:
+    return Environment(
+        loader=FileSystemLoader(_WEB_DIR),
+        autoescape=select_autoescape(enabled_extensions=(), default=False),
+        trim_blocks=False,
+        lstrip_blocks=False,
+    )
+
+
+# Rótulos legíveis para os setores do âmbito NIS2 (apresentação no formulário).
+_SECTOR_LABELS = {
+    "energia": "Energia",
+    "transportes": "Transportes",
+    "banca": "Banca",
+    "infraestruturas_mercado_financeiro": "Infraestruturas do mercado financeiro",
+    "saude": "Saúde",
+    "agua_potavel": "Água potável",
+    "aguas_residuais": "Águas residuais",
+    "infraestrutura_digital": "Infraestrutura digital",
+    "gestao_servicos_tic": "Gestão de serviços TIC",
+    "administracao_publica": "Administração pública",
+    "espaco": "Espaço",
+    "servicos_postais": "Serviços postais",
+    "gestao_residuos": "Gestão de resíduos",
+    "quimicos": "Produtos químicos",
+    "alimentacao": "Produção/distribuição alimentar",
+    "fabricacao": "Fabricação",
+    "servicos_digitais": "Prestadores de serviços digitais",
+    "investigacao": "Investigação",
+}
+
+
+def build_classifier_config() -> dict:
+    """Monta a configuração que o formulário HTML injeta no browser, a partir
+    da fonte de verdade do motor (listas de setores, limiares de dimensão e
+    mapeamento de nível). Garante que o formulário nunca diverge de
+    `classify_entity`/`required_compliance_level`."""
+    essenciais = sorted(SETORES_ESSENCIAIS)
+    importantes = sorted(SETORES_IMPORTANTES)
+    sectors = [
+        {"value": s, "label": _SECTOR_LABELS.get(s, s), "grupo": "essencial"} for s in essenciais
+    ] + [
+        {"value": s, "label": _SECTOR_LABELS.get(s, s), "grupo": "importante"} for s in importantes
+    ]
+    sectors.append({"value": "outro", "label": "Outro / não listado", "grupo": "fora de âmbito"})
+    return {
+        "essenciais": essenciais,
+        "importantes": importantes,
+        "size_employees": SIZE_THRESHOLD_EMPLOYEES,
+        "size_turnover": SIZE_THRESHOLD_TURNOVER_EUR,
+        "sectors": sectors,
+        "sectorHints": {
+            "outro": "Setor fora dos Anexos I/II — em princípio fora de âmbito por classificação direta.",
+        },
+        "level_mapping": {
+            EntityType.ESSENCIAL.value: ComplianceLevel.ELEVADO.value,
+            EntityType.IMPORTANTE.value: ComplianceLevel.SUBSTANCIAL.value,
+            EntityType.ENTIDADE_PUBLICA_RELEVANTE.value: ComplianceLevel.ELEVADO.value,
+            EntityType.FORA_DE_AMBITO.value: "",
+        },
+    }
+
+
+def render_classifier_form(brand: str = "") -> str:
+    """Gera um formulário HTML self-contained (sem servidor, sem dependências
+    externas) que classifica a entidade quanto ao âmbito NIS2 em tempo real no
+    browser, replicando `classify_entity`, e mantém um histórico local
+    (localStorage) com exportação para YAML (alimenta a CLI) e CSV."""
+    config = build_classifier_config()
+    return _web_env().get_template("classifier_form.html.j2").render(
+        brand=brand or "REGENTE",
+        config_json=json.dumps(config, ensure_ascii=False),
     )
 
 

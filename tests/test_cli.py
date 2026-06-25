@@ -256,6 +256,16 @@ def test_cli_classify_creates_missing_output_directories(tmp_path):
     assert out.exists()
 
 
+def test_cli_form_writes_self_contained_html(tmp_path):
+    out = tmp_path / "sub" / "classificador.html"
+    assert main(["form", "-o", str(out), "--brand", "Acme"]) == 0
+    assert out.exists()
+    html = out.read_text(encoding="utf-8")
+    assert html.startswith("<!DOCTYPE html>")
+    assert "Acme" in html
+    assert "nis2-config" in html
+
+
 def test_cli_version_flag(capsys):
     raised = False
     try:

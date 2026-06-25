@@ -40,6 +40,12 @@ ISO/IEC 27001:2022 e CIS Controls v8.
     entidade entre dois assessments (`nis2 progress`).
   - `charts.py` — gráfico radar (teia) de maturidade por função QNRCS em SVG
     puro, sem dependências externas, pronto a embeber em HTML/markdown.
+- `templates/web/` — formulário HTML self-contained (`nis2 form`) para
+  classificar entidades quanto ao âmbito NIS2 no browser, sem servidor: a
+  classificação é em tempo real (replica `classify_entity`, com as listas de
+  setores e a regra de dimensão injetadas da fonte Python), guarda um
+  histórico local (localStorage) e exporta o perfil em YAML para alimentar a
+  CLI (`classify`/`scaffold`/`assess`) ou o histórico em CSV.
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
   consumíveis pelo SysReptor: gap report (com maturidade por função), roadmap
   de remediação faseado, Statement of Applicability, plano de recolha de
@@ -51,7 +57,7 @@ ISO/IEC 27001:2022 e CIS Controls v8.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (67 testes).
+- `tests/` — testes do motor (72 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -88,8 +94,13 @@ uma mensagem clara em `stderr` e código de saída 1 — não um *traceback*
 Python. `nis2 --version` mostra a versão instalada.
 
 ```bash
-# 0. Consultar o catálogo de controlos QNRCS antes de preencher o entity.yaml
-#    (filtrável por --level ou --function)
+# 0a. Gerar um formulário HTML para classificar entidades no browser, sem ter
+#     de editar YAML — classifica em tempo real e guarda histórico local;
+#     o botão "Descarregar YAML" produz o entity.yaml para os comandos abaixo
+nis2 form -o out/classificador.html --brand "Acme CyberSec"
+
+# 0b. Consultar o catálogo de controlos QNRCS antes de preencher o entity.yaml
+#     (filtrável por --level ou --function)
 nis2 list-controls --level substancial
 
 # 1. Classificar a entidade e gerar o relatório de autoidentificação MyCiber
