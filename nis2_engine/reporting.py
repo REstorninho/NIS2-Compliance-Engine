@@ -8,12 +8,15 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from .assessment import _PRIORITY_BY_FUNCTION
 from .audit import VALIDATION_CHECKLIST_FIELDS, AuditReport
 from .charts import render_maturity_radar_svg
 from .classification import SETORES_ESSENCIAIS, SETORES_IMPORTANTES
 from .history import ProgressDelta
 from .incident import NotificationDeadlines, compute_deadlines
+from .loader import load_controls
 from .models import (
+    MATURITY_IMPLEMENTED_THRESHOLD,
     MATURITY_LABELS,
     SIZE_THRESHOLD_EMPLOYEES,
     SIZE_THRESHOLD_TURNOVER_EUR,
@@ -24,7 +27,7 @@ from .models import (
     IncidentNotification,
     StatementOfApplicability,
 )
-from .roadmap import RemediationRoadmap
+from .roadmap import _PHASES_BY_PRIORITY, _PHASE_ORDER, RemediationRoadmap
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "deliverables"
 _POLICIES_DIR = Path(__file__).resolve().parent.parent / "templates" / "policies"
@@ -109,6 +112,26 @@ def build_classifier_config() -> dict:
             EntityType.ENTIDADE_PUBLICA_RELEVANTE.value: ComplianceLevel.ELEVADO.value,
             EntityType.FORA_DE_AMBITO.value: "",
         },
+        "controls": [
+            {
+                "id": c.id,
+                "title": c.title,
+                "fn": c.qnrcs_function,
+                "levels": {
+                    "basico": bool(c.levels.get("basico")),
+                    "substancial": bool(c.levels.get("substancial")),
+                    "elevado": bool(c.levels.get("elevado")),
+                },
+            }
+            for c in sorted(load_controls(), key=lambda c: c.id)
+        ],
+        "priority_by_function": dict(_PRIORITY_BY_FUNCTION),
+        "maturity_threshold": MATURITY_IMPLEMENTED_THRESHOLD,
+        "maturity_labels": {str(k): v for k, v in MATURITY_LABELS.items()},
+        "phases": [
+            {"priority": p, "name": _PHASES_BY_PRIORITY[p][0], "timeframe": _PHASES_BY_PRIORITY[p][1]}
+            for p in sorted(_PHASES_BY_PRIORITY, key=lambda p: _PHASE_ORDER[p])
+        ],
     }
 
 

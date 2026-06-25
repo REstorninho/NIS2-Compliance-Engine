@@ -17,6 +17,20 @@ def test_config_matches_engine_source_of_truth():
     assert config["level_mapping"]["entidade_publica_relevante"] == "elevado"
 
 
+def test_config_includes_full_control_corpus_for_assessment():
+    from nis2_engine import load_controls
+
+    config = build_classifier_config()
+    assert len(config["controls"]) == len(load_controls())
+    sample = config["controls"][0]
+    assert set(sample.keys()) == {"id", "title", "fn", "levels"}
+    assert set(sample["levels"].keys()) == {"basico", "substancial", "elevado"}
+    assert config["maturity_threshold"] == 3
+    assert config["maturity_labels"]["3"] == "Definido"
+    # As fases do roadmap vêm da fonte de verdade (roadmap.py).
+    assert [p["priority"] for p in config["phases"]] == ["alta", "media", "baixa"]
+
+
 def test_form_is_self_contained_html_with_embedded_config():
     html = render_classifier_form(brand="Acme")
     assert html.startswith("<!DOCTYPE html>")
@@ -35,3 +49,15 @@ def test_form_is_self_contained_html_with_embedded_config():
 def test_form_default_brand_is_regente():
     html = render_classifier_form()
     assert "REGENTE" in html
+
+
+def test_form_includes_maturity_questionnaire_and_results():
+    html = render_classifier_form()
+    # Secções da autoavaliação de maturidade no browser.
+    assert "Autoavaliação de maturidade" in html
+    assert 'id="questionnaire"' in html
+    assert "Roadmap de remediação" in html
+    # O corpus de controlos tem de estar embebido na config para o questionário.
+    match = re.search(r'<script id="nis2-config" type="application/json">(.*?)</script>', html, re.S)
+    config = json.loads(match.group(1))
+    assert len(config["controls"]) >= 30

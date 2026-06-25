@@ -50,12 +50,17 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
     entidade entre dois assessments (`nis2 progress`).
   - `charts.py` — gráfico radar (teia) de maturidade por função QNRCS em SVG
     puro, sem dependências externas, pronto a embeber em HTML/markdown.
-- `templates/web/` — formulário HTML self-contained (`nis2 form`) para
-  classificar entidades quanto ao âmbito NIS2 no browser, sem servidor: a
-  classificação é em tempo real (replica `classify_entity`, com as listas de
-  setores e a regra de dimensão injetadas da fonte Python), guarda um
-  histórico local (localStorage) e exporta o perfil em YAML para alimentar a
-  CLI (`classify`/`scaffold`/`assess`) ou o histórico em CSV.
+- `templates/web/` — formulário HTML self-contained (`nis2 form`) para correr
+  todo o fluxo no browser, sem servidor: (1) **classificação de âmbito** em
+  tempo real (replica `classify_entity`); (2) **autoavaliação de maturidade**
+  — o questionário dos controlos exigidos para o nível resultante, com cálculo
+  ao vivo de score, maturidade por função e roadmap de gaps por fase (replica
+  `run_assessment` + `build_remediation_roadmap`); (3) **histórico** local
+  (localStorage). As listas de setores, a regra de dimensão e o corpus de
+  controlos são injetados da fonte de verdade Python (paridade verificada com
+  Playwright), pelo que o formulário nunca diverge do motor. Exporta o perfil
+  e as respostas em YAML para alimentar a CLI (`classify`/`scaffold`/`assess`)
+  e o histórico em CSV.
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
   consumíveis pelo SysReptor: gap report (com maturidade por função), roadmap
   de remediação faseado, Statement of Applicability, plano de recolha de
@@ -67,7 +72,7 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (72 testes).
+- `tests/` — testes do motor (74 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -105,7 +110,7 @@ Python. `nis2 --version` mostra a versão instalada.
 
 | Comando | O que faz |
 |---|---|
-| `nis2 form` | Gera o formulário HTML de classificação de âmbito (browser, com histórico local). |
+| `nis2 form` | Gera o formulário HTML que corre classificação + autoavaliação de maturidade + roadmap no browser (com histórico local). |
 | `nis2 list-controls` | Lista o catálogo de controlos QNRCS (filtrável por `--level`/`--function`). |
 | `nis2 classify` | Classifica a entidade e gera o relatório de autoidentificação MyCiber. |
 | `nis2 scaffold` | Gera o questionário de maturidade em branco para o nível-alvo. |
@@ -117,9 +122,10 @@ Python. `nis2 --version` mostra a versão instalada.
 | `nis2 incident` | Gera o alerta inicial (24h) e o relatório detalhado (72h) de notificação ao CNCS. |
 
 ```bash
-# 0a. Gerar um formulário HTML para classificar entidades no browser, sem ter
-#     de editar YAML — classifica em tempo real e guarda histórico local;
-#     o botão "Descarregar YAML" produz o entity.yaml para os comandos abaixo
+# 0a. Gerar um formulário HTML que corre TODO o fluxo no browser, sem editar
+#     YAML: classifica o âmbito, apresenta o questionário de maturidade do
+#     nível resultante e calcula score/roadmap ao vivo, com histórico local.
+#     Os botões "Descarregar perfil/respostas (YAML)" alimentam os comandos abaixo.
 nis2 form -o out/classificador.html --brand "Acme CyberSec"
 
 # 0b. Consultar o catálogo de controlos QNRCS antes de preencher o entity.yaml
