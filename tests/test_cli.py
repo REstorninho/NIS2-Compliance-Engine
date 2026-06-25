@@ -246,6 +246,16 @@ def test_cli_entity_missing_required_field_returns_friendly_error(tmp_path, caps
     assert "campo obrigatório" in captured.err
 
 
+def test_cli_classify_creates_missing_output_directories(tmp_path):
+    entity = _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+    out = tmp_path / "pasta" / "que" / "nao" / "existe" / "selfid.md"
+    assert main(["classify", str(entity), "-o", str(out)]) == 0
+    assert out.exists()
+
+
 def test_cli_version_flag(capsys):
     raised = False
     try:

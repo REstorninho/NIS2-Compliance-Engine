@@ -88,6 +88,14 @@ def load_incident(path: Path, entity: Entity) -> IncidentNotification:
     )
 
 
+def _write_output(path: str | Path, content: str) -> None:
+    """Escreve content em path, criando os diretórios pai em falta — evita que
+    `-o pasta/que/nao/existe/ficheiro.md` falhe com 'ficheiro não encontrado'."""
+    out_path = Path(path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(content, encoding="utf-8")
+
+
 def _resolve_target_level(entity: Entity, entity_type: EntityType, override: str | None) -> ComplianceLevel:
     if override:
         return ComplianceLevel(override)
@@ -109,7 +117,7 @@ def cmd_classify(args: argparse.Namespace) -> int:
     if args.output:
         target_level = None if entity_type is EntityType.FORA_DE_AMBITO else required_compliance_level(entity_type)
         report = render_self_identification(entity, entity_type, target_level)
-        Path(args.output).write_text(report, encoding="utf-8")
+        _write_output(args.output, report)
         print(f"\nRelatório de autoidentificação escrito em: {args.output}")
     return 0
 
@@ -144,7 +152,7 @@ def cmd_scaffold(args: argparse.Namespace) -> int:
     }
     out = yaml.safe_dump(scaffold, allow_unicode=True, sort_keys=False)
     if args.output:
-        Path(args.output).write_text(out, encoding="utf-8")
+        _write_output(args.output, out)
         print(f"Questionário ({len(required)} controlos) escrito em: {args.output}")
     else:
         print(out)
@@ -216,7 +224,7 @@ def cmd_progress(args: argparse.Namespace) -> int:
     print(f"Regressões:            {len(delta.regressed)}")
 
     if args.output:
-        Path(args.output).write_text(render_progress_report(delta), encoding="utf-8")
+        _write_output(args.output, render_progress_report(delta))
         print(f"\nRelatório de evolução escrito em: {args.output}")
     return 0
 
@@ -300,12 +308,12 @@ def cmd_audit(args: argparse.Namespace) -> int:
     print(f"Controlos por validar:  {len(report.pending_controls)}/{report.total_controls} ({report.pending_pct}%)")
 
     if args.output:
-        Path(args.output).write_text(render_audit_report(report), encoding="utf-8")
+        _write_output(args.output, render_audit_report(report))
         print(f"\nRelatório de auditoria escrito em: {args.output}")
 
     if args.checklist:
         rows = build_validation_checklist(controls)
-        Path(args.checklist).write_text(render_validation_checklist_csv(rows), encoding="utf-8")
+        _write_output(args.checklist, render_validation_checklist_csv(rows))
         print(f"Checklist de validação manual (CSV) escrito em: {args.checklist}")
     return 0
 
