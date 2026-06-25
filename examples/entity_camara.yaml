@@ -1,0 +1,7 @@
+# Perfil de entidade — exemplo: câmara municipal (entidade pública relevante).
+name: Câmara Municipal de Exemplo
+sector: administracao_publica
+employees: 300
+annual_turnover_eur: 0
+is_public_body: true
+is_dns_tld_or_trust_service_provider: false

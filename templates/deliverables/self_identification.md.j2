@@ -1,0 +1,47 @@
+# Relatório de Autoidentificação — MyCiber
+
+**Entidade:** {{ entity.name }}
+**Data:** {{ generated_at }}
+
+## 1. Dados da entidade
+
+| Campo | Valor |
+|-------|-------|
+| Setor declarado | {{ entity.sector }} |
+| Nº de trabalhadores | {{ entity.employees }} |
+| Volume de negócios anual (€) | {{ "%.0f"|format(entity.annual_turnover_eur) }} |
+| Entidade pública | {{ "Sim" if entity.is_public_body else "Não" }} |
+| Prestador DNS/TLD/serviços de confiança | {{ "Sim" if entity.is_dns_tld_or_trust_service_provider else "Não" }} |
+
+## 2. Resultado da qualificação
+
+{% if entity_type.value == "fora_de_ambito" -%}
+**Classificação:** FORA DE ÂMBITO
+
+Com base nos dados declarados, a entidade **não** se qualifica diretamente como
+entidade essencial, importante ou entidade pública relevante nos termos do
+DL 125/2025. Nota: a entidade pode ainda assim estar sujeita a obrigações por
+via indireta (ex: enquanto fornecedora de uma entidade em âmbito — gestão de
+risco da cadeia de abastecimento). Recomenda-se confirmação caso a caso.
+{%- else -%}
+**Classificação:** {{ entity_type.value | replace("_", " ") | upper }}
+
+**Nível de conformidade exigido:** {{ target_level.value | upper }}
+
+A entidade qualifica-se nos termos do DL 125/2025 e está sujeita às medidas
+mínimas de cibersegurança do nível **{{ target_level.value }}** da matriz de
+risco (Regulamento n.º 756/2026).
+{%- endif %}
+
+## 3. Próximos passos no MyCiber
+
+- [ ] Registar a entidade na plataforma MyCiber (autenticação via Cartão de Cidadão / Chave Móvel Digital).
+- [ ] Designar o responsável de cibersegurança e o ponto de contacto permanente.
+- [ ] Submeter o presente relatório de autoidentificação.
+{% if entity_type.value != "fora_de_ambito" -%}
+- [ ] Iniciar o assessment de maturidade e o plano de remediação (gap report).
+{%- endif %}
+
+---
+*Documento de apoio gerado automaticamente. A submissão e a veracidade dos
+dados na plataforma MyCiber são da responsabilidade da entidade.*

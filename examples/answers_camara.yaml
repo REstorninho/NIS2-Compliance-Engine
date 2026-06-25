@@ -1,0 +1,27 @@
+# Respostas ao questionário de maturidade — exemplo.
+# Gerado por `nis2 scaffold` e depois preenchido pelo consultor.
+entity: Câmara Municipal de Exemplo
+target_level: elevado
+answers:
+  - control_id: GOV-01
+    implemented: true
+    notes: Responsável e ponto de contacto designados em 2026-04.
+  - control_id: IDN-01
+    implemented: true
+    notes: Inventário em CMDB, atualizado trimestralmente.
+  - control_id: IDN-02
+    implemented: false
+  - control_id: PRT-01
+    implemented: false
+    notes: MFA apenas em VPN, falta no email e nas aplicações internas.
+  - control_id: PRT-02
+    implemented: true
+  - control_id: PRT-03
+    implemented: false
+  - control_id: DET-01
+    implemented: false
+  - control_id: RSP-01
+    implemented: false
+  - control_id: REC-01
+    implemented: true
+    notes: Backups Veeam testados; falta documentar RTO/RPO formais.

@@ -35,6 +35,29 @@ sessão (DRE devolve 403 ao proxy). **Antes de usar com clientes reais**, os
 setores, exceções de dimensão e medidas mínimas devem ser validados
 artigo-a-artigo contra o Regulamento n.º 756/2026 e o DL 125/2025 publicados.
 
+## Utilização via CLI
+
+Depois de `pip install -e .`, fica disponível o comando `nis2`:
+
+```bash
+# 1. Classificar a entidade e gerar o relatório de autoidentificação MyCiber
+nis2 classify examples/entity_camara.yaml -o out/self_identification.md
+
+# 2. Gerar um questionário de maturidade em branco para preencher
+nis2 scaffold examples/entity_camara.yaml -o answers.yaml
+
+# 3. Correr o assessment e gerar todos os deliverables (gap report, SoA,
+#    autoidentificação) num diretório de saída
+nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/
+```
+
+O fluxo típico de uma consultoria é: `classify` → `scaffold` → preencher o
+`answers.yaml` com o cliente → `assess`. O nível-alvo é derivado da
+classificação, mas pode ser forçado com `--level basico|substancial|elevado`.
+
+Em alternativa, o motor é usável como biblioteca — ver
+`examples/demo_deliverables.py`.
+
 ## Fora de âmbito deste repositório
 
 Recolha automatizada de evidência técnica (scans, Wazuh, etc.) e a camada de
