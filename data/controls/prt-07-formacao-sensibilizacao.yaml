@@ -15,3 +15,6 @@ levels:
   substancial: true
   elevado: true
 evidence_type: organizacional
+evidence_contract:
+  source_hint: "Plataforma de formação / RH (registos de formação e phishing simulado)"
+  fields: ["staff_trained_pct", "last_campaign_at", "phishing_fail_rate", "checked_at"]

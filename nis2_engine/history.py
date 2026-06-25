@@ -95,7 +95,12 @@ def load_snapshots(history_dir: Path, entity_name: str) -> list[AssessmentSnapsh
     snapshots = []
     for path in sorted(history_dir.glob(f"{prefix}_*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
-        snapshots.append(AssessmentSnapshot.from_dict(data))
+        snapshot = AssessmentSnapshot.from_dict(data)
+        # O slug é só para o nome do ficheiro — dois nomes distintos podem
+        # colidir no mesmo slug (ex. "Município A" vs "Municipio-A"). Filtra
+        # pelo nome exato gravado no snapshot para evitar misturar entidades.
+        if snapshot.entity_name == entity_name:
+            snapshots.append(snapshot)
     return sorted(snapshots, key=lambda s: s.generated_at)
 
 

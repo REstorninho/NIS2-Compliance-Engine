@@ -60,6 +60,20 @@ def test_load_snapshots_returns_empty_for_missing_dir(tmp_path):
     assert load_snapshots(tmp_path / "nope", "Energia SA") == []
 
 
+def test_load_snapshots_does_not_mix_slug_colliding_entities(tmp_path):
+    # "Energia SA" e "Energia-SA" colapsam no mesmo slug de ficheiro, mas são
+    # entidades distintas — não devem ser misturadas no histórico.
+    a = build_snapshot(_result([]), generated_at="2026-01-01T00:00:00")
+    b = build_snapshot(_result([]), generated_at="2026-02-01T00:00:00")
+    b.entity_name = "Energia-SA"
+    save_snapshot(a, tmp_path)
+    save_snapshot(b, tmp_path)
+
+    loaded = load_snapshots(tmp_path, "Energia SA")
+    assert len(loaded) == 1
+    assert loaded[0].entity_name == "Energia SA"
+
+
 def test_load_snapshots_sorted_chronologically(tmp_path):
     early = build_snapshot(_result([]), generated_at="2026-01-01T00:00:00")
     late = build_snapshot(_result([]), generated_at="2026-02-01T00:00:00")

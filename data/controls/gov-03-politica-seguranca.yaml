@@ -14,3 +14,6 @@ levels:
   substancial: true
   elevado: true
 evidence_type: documental
+evidence_contract:
+  source_hint: "GRC / gestão documental (política de segurança aprovada)"
+  fields: ["policy_doc_ref", "approved_by", "approved_at", "next_review_at", "checked_at"]

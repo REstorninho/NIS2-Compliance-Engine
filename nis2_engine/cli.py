@@ -17,10 +17,13 @@ from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType, Incid
 from .reporting import (
     render_audit_report,
     render_bcdr_policy,
+    render_evidence_plan,
     render_gap_report,
+    render_html_report,
     render_incident_alert,
     render_incident_report,
     render_incident_response_policy,
+    render_maturity_radar,
     render_progress_report,
     render_roadmap,
     render_self_identification,
@@ -167,6 +170,11 @@ def cmd_assess(args: argparse.Namespace) -> int:
     (out_dir / "self_identification.md").write_text(
         render_self_identification(entity, entity_type, target_level), encoding="utf-8"
     )
+    (out_dir / "evidence_plan.md").write_text(render_evidence_plan(result), encoding="utf-8")
+    (out_dir / "maturity_radar.svg").write_text(render_maturity_radar(result), encoding="utf-8")
+    (out_dir / "report.html").write_text(
+        render_html_report(result, entity_type, brand=args.brand), encoding="utf-8"
+    )
 
     print(f"Entidade:       {entity.name} ({entity_type.value}, nível {target_level.value})")
     print(f"Conformidade:   {result.score_pct}% (maturidade média: {result.maturity_score_pct}%)")
@@ -207,6 +215,25 @@ def cmd_progress(args: argparse.Namespace) -> int:
     if args.output:
         Path(args.output).write_text(render_progress_report(delta), encoding="utf-8")
         print(f"\nRelatório de evolução escrito em: {args.output}")
+    return 0
+
+
+def cmd_history(args: argparse.Namespace) -> int:
+    """Lista todos os snapshots de assessment gravados para uma entidade, por
+    ordem cronológica (data, score de conformidade e maturidade média)."""
+    snapshots = load_snapshots(Path(args.history_dir), args.entity)
+    if not snapshots:
+        print(
+            f"Sem snapshots para '{args.entity}' em {args.history_dir}/.",
+            file=sys.stderr,
+        )
+        return 1
+
+    print(f"Histórico de '{args.entity}' ({len(snapshots)} snapshot(s)):\n")
+    print(f"{'#':>3}  {'Data':<26}  {'Score':>7}  {'Maturidade':>10}")
+    print(f"{'-' * 3}  {'-' * 26}  {'-' * 7}  {'-' * 10}")
+    for i, snap in enumerate(snapshots, start=1):
+        print(f"{i:>3}  {snap.generated_at:<26}  {snap.score_pct:>6}%  {snap.maturity_score_pct:>9}%")
     return 0
 
 
@@ -299,6 +326,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_assess.add_argument("-o", "--output", default="out", help="Diretório de saída para os deliverables (default: ./out).")
     p_assess.add_argument("--level", choices=[l.value for l in ComplianceLevel], help="Forçar nível-alvo em vez do derivado da classificação.")
     p_assess.add_argument("--history-dir", help="Diretório onde gravar um snapshot deste assessment (para comparação futura com 'nis2 progress').")
+    p_assess.add_argument("--brand", default="", help="Nome/marca do consultor a apresentar no relatório HTML.")
     p_assess.set_defaults(func=cmd_assess)
 
     p_progress = sub.add_parser("progress", help="Compara os dois assessments mais recentes de uma entidade e gera um relatório de evolução.")
@@ -306,6 +334,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_progress.add_argument("--history-dir", required=True, help="Diretório com os snapshots gravados por 'nis2 assess --history-dir'.")
     p_progress.add_argument("-o", "--output", help="Caminho para escrever o relatório de evolução (markdown).")
     p_progress.set_defaults(func=cmd_progress)
+
+    p_history = sub.add_parser("history", help="Lista os snapshots de assessment gravados para uma entidade.")
+    p_history.add_argument("entity", help="Nome da entidade (igual ao usado no perfil YAML).")
+    p_history.add_argument("--history-dir", required=True, help="Diretório com os snapshots gravados por 'nis2 assess --history-dir'.")
+    p_history.set_defaults(func=cmd_history)
 
     p_incident = sub.add_parser("incident", help="Gera o alerta inicial (24h) e o relatório detalhado (72h) de notificação de um incidente ao CNCS via MyCiber.")
     p_incident.add_argument("entity", help="Ficheiro YAML com o perfil da entidade.")

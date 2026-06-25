@@ -1,0 +1,25 @@
+# Plano de Recolha de Evidência — {{ result.entity.name }}
+
+**Nível de conformidade:** {{ result.target_level.value | capitalize }}
+
+Este plano define, para cada controlo aplicável, a **fonte de evidência**
+sugerida e os **campos de dados** que a comprovam. Serve de contrato para a
+camada de recolha automatizada (scans, EDR, GRC) e de checklist para a equipa
+técnica preencher a evidência de cada controlo.
+
+| ID | Controlo | Função | Estado | Fonte de evidência | Campos a recolher |
+|----|----------|--------|--------|--------------------|-------------------|
+{% for gap in result.gaps | sort(attribute="control.id") -%}
+{% set c = gap.control -%}
+| {{ c.id }} | {{ c.title }} | {{ c.qnrcs_function }} | {{ "✅ Implementado" if gap.implemented else "❌ Em falta" }} | {{ c.evidence_contract.source_hint if c.evidence_contract else "—" }} | {{ (c.evidence_contract.fields | join(", ")) if c.evidence_contract else "—" }} |
+{% endfor %}
+
+## Notas
+
+- **Estado** reflete a maturidade observada no último assessment (implementado
+  ≥ nível "Definido"). Os campos continuam a ser úteis mesmo para controlos já
+  implementados — são a evidência que sustenta a conformidade numa auditoria.
+- Os campos seguem uma convenção `snake_case` pensada para ingestão automática;
+  `checked_at` / `*_at` são timestamps ISO 8601.
+- Controlos sem fonte automatizável (organizacionais/documentais) recolhem a
+  evidência a partir do sistema de GRC / gestão documental indicado.

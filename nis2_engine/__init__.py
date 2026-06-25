@@ -40,7 +40,11 @@ from .reporting import (
     render_bcdr_policy,
     render_audit_report,
     render_progress_report,
+    render_evidence_plan,
+    render_maturity_radar,
+    render_html_report,
 )
+from .charts import render_maturity_radar_svg
 
 __all__ = [
     "Control",
@@ -84,4 +88,8 @@ __all__ = [
     "render_bcdr_policy",
     "render_audit_report",
     "render_progress_report",
+    "render_evidence_plan",
+    "render_maturity_radar",
+    "render_html_report",
+    "render_maturity_radar_svg",
 ]

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"/>
+<title>Relatório de Conformidade NIS2 — {{ result.entity.name }}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #1a1a1a;
+         max-width: 900px; margin: 0 auto; padding: 40px 32px; line-height: 1.5; }
+  header { border-bottom: 3px solid #2b6cb0; padding-bottom: 16px; margin-bottom: 28px;
+           display: flex; justify-content: space-between; align-items: baseline; }
+  header .brand { font-size: 20px; font-weight: 700; color: #2b6cb0; }
+  header .date { color: #666; font-size: 13px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin-top: 32px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+  .meta { color: #555; font-size: 14px; margin-bottom: 24px; }
+  .cards { display: flex; gap: 16px; margin: 24px 0; }
+  .card { flex: 1; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+          padding: 16px; text-align: center; }
+  .card .value { font-size: 30px; font-weight: 700; color: #2b6cb0; }
+  .card .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: .04em; }
+  .radar { text-align: center; margin: 24px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; }
+  th { background: #f7fafc; }
+  .ok { color: #2f855a; font-weight: 600; }
+  .gap { color: #c53030; font-weight: 600; }
+  .prio-alta { color: #c53030; font-weight: 600; }
+  .prio-media { color: #b7791f; }
+  .prio-baixa { color: #718096; }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #eee;
+           color: #888; font-size: 12px; }
+  @media print { body { padding: 0; } header { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">{{ brand }}</span>
+  <span class="date">{{ generated_at }}</span>
+</header>
+
+<h1>Relatório de Conformidade NIS2</h1>
+<div class="meta">
+  <strong>{{ result.entity.name }}</strong> — {{ entity_type.value | replace("_", " ") | capitalize }},
+  nível-alvo <strong>{{ result.target_level.value | capitalize }}</strong><br/>
+  Setor: {{ result.entity.sector }} · {{ result.entity.employees }} trabalhadores ·
+  {{ "%.0f"|format(result.entity.annual_turnover_eur) }} € volume de negócios
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="value">{{ result.score_pct }}%</div>
+    <div class="label">Conformidade</div>
+  </div>
+  <div class="card">
+    <div class="value">{{ result.maturity_score_pct }}%</div>
+    <div class="label">Maturidade média</div>
+  </div>
+  <div class="card">
+    <div class="value">{{ result.gaps | rejectattr("implemented") | list | length }}</div>
+    <div class="label">Gaps abertos</div>
+  </div>
+</div>
+
+<h2>Maturidade por função (QNRCS)</h2>
+<div class="radar">{{ radar_svg }}</div>
+
+<h2>Gaps prioritários</h2>
+<table>
+  <thead>
+    <tr><th>ID</th><th>Controlo</th><th>Função</th><th>Prioridade</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+  {% for gap in result.gaps if not gap.implemented -%}
+    <tr>
+      <td>{{ gap.control.id }}</td>
+      <td>{{ gap.control.title }}</td>
+      <td>{{ gap.control.qnrcs_function }}</td>
+      <td class="prio-{{ gap.priority }}">{{ gap.priority | capitalize }}</td>
+      <td class="gap">Em falta</td>
+    </tr>
+  {% endfor %}
+  {% if result.gaps | rejectattr("implemented") | list | length == 0 -%}
+    <tr><td colspan="5" class="ok">Sem gaps abertos para o nível-alvo. 🎉</td></tr>
+  {% endif %}
+  </tbody>
+</table>
+
+<footer>
+  Relatório gerado pelo motor de conformidade NIS2 (DL 125/2025 + Regulamento
+  n.º 756/2026). Os crosswalks legais devem ser validados artigo-a-artigo contra
+  o texto oficial antes de uso formal — ver relatório de auditoria (<code>nis2 audit</code>).
+</footer>
+</body>
+</html>

@@ -48,11 +48,18 @@ def test_cli_scaffold_then_assess(tmp_path):
     assert scaffold.exists()
 
     out_dir = tmp_path / "out"
-    assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir)]) == 0
+    assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir), "--brand", "Acme"]) == 0
     assert (out_dir / "gap_report.md").exists()
     assert (out_dir / "roadmap.md").exists()
     assert (out_dir / "statement_of_applicability.md").exists()
     assert (out_dir / "self_identification.md").exists()
+    assert (out_dir / "evidence_plan.md").exists()
+    assert (out_dir / "maturity_radar.svg").exists()
+    report_html = out_dir / "report.html"
+    assert report_html.exists()
+    html = report_html.read_text(encoding="utf-8")
+    assert "<svg" in html
+    assert "Acme" in html
 
 
 def test_cli_assess_out_of_scope_returns_error(tmp_path):
@@ -169,3 +176,26 @@ def test_cli_incident_writes_alert_and_report(tmp_path):
     assert "INC-2026-001" in alert.read_text(encoding="utf-8")
     assert "2026-06-25 09:00" in alert.read_text(encoding="utf-8")
     assert "Em investigação." in report.read_text(encoding="utf-8")
+
+
+def test_cli_history_lists_snapshots(tmp_path, capsys):
+    entity = _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+    scaffold = tmp_path / "answers.yaml"
+    assert main(["scaffold", str(entity), "-o", str(scaffold)]) == 0
+
+    history_dir = tmp_path / "history"
+    out_dir = tmp_path / "out"
+    assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir), "--history-dir", str(history_dir)]) == 0
+
+    assert main(["history", "Energia SA", "--history-dir", str(history_dir)]) == 0
+    captured = capsys.readouterr()
+    assert "1 snapshot(s)" in captured.out
+
+
+def test_cli_history_no_snapshots_returns_error(tmp_path):
+    history_dir = tmp_path / "history"
+    history_dir.mkdir()
+    assert main(["history", "Inexistente", "--history-dir", str(history_dir)]) == 1

@@ -14,3 +14,6 @@ levels:
   substancial: false
   elevado: true
 evidence_type: organizacional
+evidence_contract:
+  source_hint: "GRC / auditoria interna (relatórios de avaliação de eficácia)"
+  fields: ["last_assessment_at", "assessment_report_ref", "findings_open", "checked_at"]

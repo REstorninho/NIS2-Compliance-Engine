@@ -15,3 +15,6 @@ levels:
   substancial: false
   elevado: true
 evidence_type: tecnica_manual
+evidence_contract:
+  source_hint: "Gestão de instalações / controlo de acessos físicos"
+  fields: ["controlled_areas_count", "access_logs_retained", "last_inspection_at", "checked_at"]

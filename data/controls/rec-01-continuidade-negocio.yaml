@@ -14,3 +14,6 @@ levels:
   substancial: true
   elevado: true
 evidence_type: tecnica_manual
+evidence_contract:
+  source_hint: "GRC / plano de continuidade (BC/DR documentado com RTO/RPO)"
+  fields: ["bcp_doc_ref", "rto_hours", "rpo_hours", "last_review_at", "checked_at"]

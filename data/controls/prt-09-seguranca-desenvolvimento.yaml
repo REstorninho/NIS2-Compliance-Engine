@@ -14,3 +14,6 @@ levels:
   substancial: false
   elevado: true
 evidence_type: documental
+evidence_contract:
+  source_hint: "SDLC / gestão de aquisições (requisitos de segurança, SAST/DAST)"
+  fields: ["security_requirements_ref", "code_reviews_done", "sast_findings_open", "checked_at"]

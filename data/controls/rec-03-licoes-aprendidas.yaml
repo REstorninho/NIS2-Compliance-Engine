@@ -14,3 +14,6 @@ levels:
   substancial: false
   elevado: true
 evidence_type: organizacional
+evidence_contract:
+  source_hint: "Gestão de incidentes / GRC (relatórios pós-incidente)"
+  fields: ["postmortems_last_12m", "actions_identified", "actions_closed", "checked_at"]
