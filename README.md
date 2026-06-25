@@ -6,6 +6,12 @@ ISO/IEC 27001:2022 e CIS Controls v8.
 
 ## Estrutura
 
+- `CLAUDE.md` — system prompt do copiloto **REGENTE**: identidade e papel,
+  base normativa autoritativa (DL 125/2025 + Regulamento n.º 756/2026, Anexos
+  I a IV), regras de raciocínio regulatório (qualificação, matriz de risco,
+  seleção de medidas, notificação de incidentes), comportamento operacional e
+  limites/salvaguardas. Carregado automaticamente pelo Claude Code ao
+  trabalhar neste repositório.
 - `data/controls/` — corpus de controlos em YAML. Cada ficheiro é um controlo
   com o crosswalk NIS2 ↔ QNRCS ↔ ISO 27001 ↔ CIS ↔ RGPD, o nível mínimo exigido
   (básico/substancial/elevado) e o tipo de evidência esperado.
