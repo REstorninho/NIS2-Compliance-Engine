@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -10,12 +11,15 @@ from .assessment import run_assessment
 from .audit import build_audit_report
 from .classification import classify_entity, required_compliance_level
 from .history import build_snapshot, compare_snapshots, load_snapshots, save_snapshot
+from .incident import compute_deadlines
 from .loader import load_controls
-from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType
+from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType, IncidentNotification
 from .reporting import (
     render_audit_report,
     render_bcdr_policy,
     render_gap_report,
+    render_incident_alert,
+    render_incident_report,
     render_incident_response_policy,
     render_progress_report,
     render_roadmap,
@@ -58,6 +62,24 @@ def load_answers(path: Path) -> list[AssessmentAnswer]:
             )
         )
     return answers
+
+
+def load_incident(path: Path, entity: Entity) -> IncidentNotification:
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return IncidentNotification(
+        incident_id=raw["incident_id"],
+        entity=entity,
+        detected_at=datetime.fromisoformat(str(raw["detected_at"])),
+        severity=raw["severity"],
+        description=raw.get("description", ""),
+        affected_systems=raw.get("affected_systems", []),
+        impact_summary=raw.get("impact_summary", ""),
+        indicators_of_compromise=raw.get("indicators_of_compromise", []),
+        cross_border_effect=bool(raw.get("cross_border_effect", False)),
+        root_cause=raw.get("root_cause", ""),
+        mitigation_actions=raw.get("mitigation_actions", []),
+        status=raw.get("status", "em_curso"),
+    )
 
 
 def _resolve_target_level(entity: Entity, entity_type: EntityType, override: str | None) -> ComplianceLevel:
@@ -188,6 +210,32 @@ def cmd_progress(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_incident(args: argparse.Namespace) -> int:
+    """Gera os deliverables do regime de notificação de incidentes ao CNCS via
+    MyCiber (DL 125/2025, Art. 23): alerta inicial (24h) e relatório detalhado
+    (72h), com os prazos calculados a partir da deteção do incidente."""
+    entity = load_entity(Path(args.entity))
+    incident = load_incident(Path(args.incident), entity)
+    deadlines = compute_deadlines(incident)
+
+    out_dir = Path(args.output)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "alerta_inicial_24h.md").write_text(
+        render_incident_alert(incident, deadlines), encoding="utf-8"
+    )
+    (out_dir / "relatorio_detalhado_72h.md").write_text(
+        render_incident_report(incident, deadlines), encoding="utf-8"
+    )
+
+    print(f"Incidente:             {incident.incident_id} ({incident.severity})")
+    print(f"Detetado em:           {incident.detected_at.isoformat()}")
+    print(f"Prazo alerta inicial:  {deadlines.alerta_inicial.isoformat()}")
+    print(f"Prazo relatório 72h:   {deadlines.relatorio_detalhado.isoformat()}")
+    print(f"Prazo relatório final: {deadlines.relatorio_final.isoformat()}")
+    print(f"Deliverables escritos em: {out_dir}/")
+    return 0
+
+
 def cmd_policies(args: argparse.Namespace) -> int:
     """Gera o pacote de políticas/procedimentos chave (evidência documental)
     para a entidade: resposta a incidentes, segurança de fornecedores e
@@ -258,6 +306,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_progress.add_argument("--history-dir", required=True, help="Diretório com os snapshots gravados por 'nis2 assess --history-dir'.")
     p_progress.add_argument("-o", "--output", help="Caminho para escrever o relatório de evolução (markdown).")
     p_progress.set_defaults(func=cmd_progress)
+
+    p_incident = sub.add_parser("incident", help="Gera o alerta inicial (24h) e o relatório detalhado (72h) de notificação de um incidente ao CNCS via MyCiber.")
+    p_incident.add_argument("entity", help="Ficheiro YAML com o perfil da entidade.")
+    p_incident.add_argument("incident", help="Ficheiro YAML com os dados do incidente.")
+    p_incident.add_argument("-o", "--output", default="out/incidente", help="Diretório de saída (default: ./out/incidente).")
+    p_incident.set_defaults(func=cmd_incident)
 
     p_policies = sub.add_parser("policies", help="Gera o pacote de políticas chave (resposta a incidentes, fornecedores, BC/DR).")
     p_policies.add_argument("entity", help="Ficheiro YAML com o perfil da entidade.")

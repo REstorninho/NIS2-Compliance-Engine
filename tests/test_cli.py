@@ -142,3 +142,30 @@ def test_cli_progress_compares_two_assessments(tmp_path):
     assert progress_out.exists()
     content = progress_out.read_text(encoding="utf-8")
     assert "Relatório de Evolução" in content
+
+
+def test_cli_incident_writes_alert_and_report(tmp_path):
+    entity = _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+    incident = _write(
+        tmp_path / "incident.yaml",
+        {
+            "incident_id": "INC-2026-001",
+            "detected_at": "2026-06-24T09:00:00",
+            "severity": "alto",
+            "description": "Acesso não autorizado detetado num servidor de email.",
+            "affected_systems": ["Servidor de email"],
+            "cross_border_effect": False,
+        },
+    )
+    out_dir = tmp_path / "out" / "incidente"
+    assert main(["incident", str(entity), str(incident), "-o", str(out_dir)]) == 0
+    alert = out_dir / "alerta_inicial_24h.md"
+    report = out_dir / "relatorio_detalhado_72h.md"
+    assert alert.exists()
+    assert report.exists()
+    assert "INC-2026-001" in alert.read_text(encoding="utf-8")
+    assert "2026-06-25 09:00" in alert.read_text(encoding="utf-8")
+    assert "Em investigação." in report.read_text(encoding="utf-8")

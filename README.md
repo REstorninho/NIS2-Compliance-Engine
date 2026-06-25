@@ -38,7 +38,7 @@ ISO/IEC 27001:2022 e CIS Controls v8.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (50 testes).
+- `tests/` — testes do motor (52 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -84,6 +84,10 @@ nis2 audit -o out/audit_report.md
 #    comparar os dois assessments mais recentes da mesma entidade
 nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/ --history-dir out/.history
 nis2 progress "Câmara Municipal de Exemplo" --history-dir out/.history -o out/relatorio_evolucao.md
+
+# 7. Gerar o alerta inicial (24h) e o relatório detalhado (72h) de um
+#    incidente para notificação ao CNCS via MyCiber (Art. 23 DL 125/2025)
+nis2 incident examples/entity_camara.yaml examples/incident_camara.yaml -o out/incidente
 ```
 
 O fluxo típico de uma consultoria é: `classify` → `scaffold` → preencher o

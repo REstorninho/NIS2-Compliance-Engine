@@ -1,0 +1,19 @@
+incident_id: INC-2026-001
+detected_at: "2026-06-24T09:00:00"
+severity: alto
+description: >
+  Acesso não autorizado detetado num servidor de email institucional, com
+  indícios de exfiltração de mensagens de colaboradores.
+affected_systems:
+  - Servidor de email (Exchange on-prem)
+impact_summary: >
+  Impacto potencial na confidencialidade de comunicações institucionais.
+  Avaliação de impacto operacional em curso.
+indicators_of_compromise:
+  - 198.51.100.23
+root_cause: ""
+mitigation_actions:
+  - Isolamento do servidor afetado da rede
+  - Reposição de credenciais de administração
+cross_border_effect: false
+status: em_curso
