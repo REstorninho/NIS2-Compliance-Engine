@@ -37,3 +37,61 @@ def build_audit_report(controls: list[Control]) -> AuditReport:
         confirmed_controls=confirmed,
         pending_controls=pending,
     )
+
+
+# Colunas do checklist de validação manual (ver `build_validation_checklist`).
+# Os campos `*_atual` refletem o estado presente no corpus; os últimos quatro
+# ficam em branco para o revisor preencher contra o texto oficial do DRE.
+VALIDATION_CHECKLIST_FIELDS = [
+    "item_id",
+    "tipo",
+    "titulo",
+    "nis2_article_atual",
+    "regulamento_756_2026_atual",
+    "estado_validacao_atual",
+    "fonte_atual",
+    "artigo_confirmado_dre",
+    "data_confirmacao",
+    "confirmado_por",
+    "observacoes",
+]
+
+
+def build_validation_checklist(controls: list[Control]) -> list[dict[str, str]]:
+    """Gera as linhas de um checklist de validação jurídica manual: uma linha
+    por controlo (crosswalk citado vs. estado atual) mais uma linha para a
+    classificação setorial, com colunas em branco para um revisor confirmar
+    artigo-a-artigo contra o texto oficial do DL 125/2025 e do Regulamento
+    n.º 756/2026 publicados em Diário da República."""
+    rows: list[dict[str, str]] = [
+        {
+            "item_id": "CLASSIFICACAO-SETORIAL",
+            "tipo": "classificacao",
+            "titulo": "Setores essenciais/importantes e regra de dimensão (Anexos I/II)",
+            "nis2_article_atual": "",
+            "regulamento_756_2026_atual": "",
+            "estado_validacao_atual": CLASSIFICACAO_ESTADO_VALIDACAO,
+            "fonte_atual": CLASSIFICACAO_FONTE,
+            "artigo_confirmado_dre": "",
+            "data_confirmacao": "",
+            "confirmado_por": "",
+            "observacoes": "",
+        }
+    ]
+    for control in sorted(controls, key=lambda c: c.id):
+        rows.append(
+            {
+                "item_id": control.id,
+                "tipo": "controlo",
+                "titulo": control.title,
+                "nis2_article_atual": ", ".join(control.crosswalk.nis2_article),
+                "regulamento_756_2026_atual": ", ".join(control.crosswalk.regulamento_756_2026),
+                "estado_validacao_atual": control.estado_validacao,
+                "fonte_atual": control.fonte,
+                "artigo_confirmado_dre": "",
+                "data_confirmacao": "",
+                "confirmado_por": "",
+                "observacoes": "",
+            }
+        )
+    return rows

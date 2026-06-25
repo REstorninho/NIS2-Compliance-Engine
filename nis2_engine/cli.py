@@ -8,7 +8,7 @@ from pathlib import Path
 import yaml
 
 from .assessment import run_assessment
-from .audit import build_audit_report
+from .audit import build_audit_report, build_validation_checklist
 from .classification import classify_entity, required_compliance_level
 from .history import build_snapshot, compare_snapshots, load_snapshots, save_snapshot
 from .incident import compute_deadlines
@@ -16,6 +16,7 @@ from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType, IncidentNotification
 from .reporting import (
     render_audit_report,
+    render_validation_checklist_csv,
     render_bcdr_policy,
     render_evidence_plan,
     render_gap_report,
@@ -299,6 +300,11 @@ def cmd_audit(args: argparse.Namespace) -> int:
     if args.output:
         Path(args.output).write_text(render_audit_report(report), encoding="utf-8")
         print(f"\nRelatório de auditoria escrito em: {args.output}")
+
+    if args.checklist:
+        rows = build_validation_checklist(controls)
+        Path(args.checklist).write_text(render_validation_checklist_csv(rows), encoding="utf-8")
+        print(f"Checklist de validação manual (CSV) escrito em: {args.checklist}")
     return 0
 
 
@@ -354,6 +360,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_audit = sub.add_parser("audit", help="Gera o relatório de rastreabilidade jurídica (controlos confirmados vs. por validar).")
     p_audit.add_argument("-o", "--output", help="Caminho para escrever o relatório de auditoria (markdown).")
+    p_audit.add_argument(
+        "--checklist",
+        help="Caminho para escrever o checklist de validação jurídica manual (CSV), com colunas em "
+        "branco para confirmar cada controlo artigo-a-artigo contra o texto oficial do DRE.",
+    )
     p_audit.set_defaults(func=cmd_audit)
 
     return parser

@@ -24,7 +24,10 @@ ISO/IEC 27001:2022 e CIS Controls v8.
   - `audit.py` — relatório de rastreabilidade jurídica: que controlos e que
     classificação setorial já foram confirmados artigo-a-artigo contra o
     texto oficial (campo `estado_validacao` em cada `Control`), e o que
-    continua por validar via fontes secundárias.
+    continua por validar via fontes secundárias. Gera também um checklist de
+    validação manual em CSV (`build_validation_checklist`), uma linha por
+    controlo (+ a classificação setorial) com o crosswalk atualmente citado e
+    colunas em branco para um revisor confirmar artigo-a-artigo contra o DRE.
   - `history.py` — snapshots serializáveis de cada `AssessmentResult` (score,
     maturidade por função, estado de cada controlo), gravados em disco com
     timestamp; permite listar (`nis2 history`) e comparar a evolução de uma
@@ -42,7 +45,7 @@ ISO/IEC 27001:2022 e CIS Controls v8.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (58 testes).
+- `tests/` — testes do motor (61 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -62,6 +65,14 @@ exatamente quantos controlos já foram confirmados artigo-a-artigo e quantos
 continuam pendentes — à medida que cada controlo for validado contra o texto
 oficial, basta atualizar o respetivo YAML em `data/controls/` com
 `estado_validacao: confirmado` e `fonte: ...`.
+
+Para facilitar essa validação manual (sem acesso direto ao DRE nesta sessão),
+`nis2 audit --checklist <ficheiro.csv>` exporta um checklist em CSV — uma
+linha por controlo (mais uma para a classificação setorial) com o artigo
+NIS2/Regulamento atualmente citado no crosswalk e colunas em branco
+(`artigo_confirmado_dre`, `data_confirmacao`, `confirmado_por`,
+`observacoes`) para um revisor (ex. jurídico) preencher ao confrontar cada
+linha com o texto oficial publicado.
 
 ## Utilização via CLI
 
@@ -83,7 +94,9 @@ nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/ --b
 nis2 policies examples/entity_camara.yaml -o out/politicas --approver "Nome do Responsável"
 
 # 5. Ver o estado de rastreabilidade jurídica do corpus (confirmado vs. por validar)
-nis2 audit -o out/audit_report.md
+#    e gerar o checklist de validação manual (CSV) para confirmar cada
+#    controlo artigo-a-artigo contra o texto oficial do DRE
+nis2 audit -o out/audit_report.md --checklist out/checklist_validacao_juridica.csv
 
 # 6. Gravar um snapshot do assessment para comparação futura, listar o histórico
 #    e comparar os dois assessments mais recentes da mesma entidade

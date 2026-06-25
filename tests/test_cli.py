@@ -100,6 +100,15 @@ def test_cli_audit_writes_report(tmp_path):
     assert "por validar" in content.lower() or "POR_VALIDAR" in content.upper()
 
 
+def test_cli_audit_writes_validation_checklist_csv(tmp_path):
+    checklist = tmp_path / "checklist.csv"
+    assert main(["audit", "--checklist", str(checklist)]) == 0
+    assert checklist.exists()
+    content = checklist.read_text(encoding="utf-8")
+    assert "CLASSIFICACAO-SETORIAL" in content
+    assert "artigo_confirmado_dre" in content
+
+
 def test_cli_assess_with_history_dir_saves_snapshot(tmp_path):
     entity = _write(
         tmp_path / "entity.yaml",

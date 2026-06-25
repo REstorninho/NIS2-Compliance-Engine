@@ -19,7 +19,7 @@ from .soa import build_statement_of_applicability
 from .incident import compute_deadlines, NotificationDeadlines
 from .classification import required_compliance_level
 from .roadmap import build_remediation_roadmap, RemediationRoadmap, RoadmapPhase
-from .audit import build_audit_report, AuditReport
+from .audit import build_audit_report, build_validation_checklist, AuditReport, VALIDATION_CHECKLIST_FIELDS
 from .history import (
     AssessmentSnapshot,
     ProgressDelta,
@@ -43,6 +43,7 @@ from .reporting import (
     render_evidence_plan,
     render_maturity_radar,
     render_html_report,
+    render_validation_checklist_csv,
 )
 from .charts import render_maturity_radar_svg
 
@@ -69,7 +70,9 @@ __all__ = [
     "RemediationRoadmap",
     "RoadmapPhase",
     "build_audit_report",
+    "build_validation_checklist",
     "AuditReport",
+    "VALIDATION_CHECKLIST_FIELDS",
     "AssessmentSnapshot",
     "ProgressDelta",
     "build_snapshot",
@@ -91,5 +94,6 @@ __all__ = [
     "render_evidence_plan",
     "render_maturity_radar",
     "render_html_report",
+    "render_validation_checklist_csv",
     "render_maturity_radar_svg",
 ]

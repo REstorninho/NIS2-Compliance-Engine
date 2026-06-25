@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import csv
+import io
 from datetime import datetime
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from .audit import AuditReport
+from .audit import VALIDATION_CHECKLIST_FIELDS, AuditReport
 from .charts import render_maturity_radar_svg
 from .history import ProgressDelta
 from .incident import NotificationDeadlines, compute_deadlines
@@ -69,6 +71,17 @@ def render_roadmap(roadmap: RemediationRoadmap) -> str:
 def render_audit_report(report: AuditReport, generated_at: str | None = None) -> str:
     generated_at = generated_at or datetime.now().strftime("%Y-%m-%d")
     return _env().get_template("audit_report.md.j2").render(report=report, generated_at=generated_at)
+
+
+def render_validation_checklist_csv(rows: list[dict[str, str]]) -> str:
+    """Serializa o checklist de validação jurídica manual (ver
+    `audit.build_validation_checklist`) como CSV, pronto a abrir em
+    Excel/Sheets para um revisor preencher contra o texto oficial do DRE."""
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=VALIDATION_CHECKLIST_FIELDS)
+    writer.writeheader()
+    writer.writerows(rows)
+    return buffer.getvalue()
 
 
 def render_progress_report(delta: ProgressDelta) -> str:
