@@ -10,7 +10,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .assessment import _PRIORITY_BY_FUNCTION
 from .audit import VALIDATION_CHECKLIST_FIELDS, AuditReport
-from .charts import render_maturity_radar_svg
+from .charts import QNRCS_FUNCTION_ORDER, render_maturity_radar_svg
 from .classification import SETORES_ESSENCIAIS, SETORES_IMPORTANTES
 from .history import ProgressDelta
 from .incident import NotificationDeadlines, compute_deadlines
@@ -126,6 +126,7 @@ def build_classifier_config() -> dict:
             for c in sorted(load_controls(), key=lambda c: c.id)
         ],
         "priority_by_function": dict(_PRIORITY_BY_FUNCTION),
+        "radar_order": list(QNRCS_FUNCTION_ORDER),
         "maturity_threshold": MATURITY_IMPLEMENTED_THRESHOLD,
         "maturity_labels": {str(k): v for k, v in MATURITY_LABELS.items()},
         "phases": [
@@ -141,6 +142,7 @@ def render_classifier_form(brand: str = "") -> str:
     browser, replicando `classify_entity`, e mantém um histórico local
     (localStorage) com exportação para YAML (alimenta a CLI) e CSV."""
     config = build_classifier_config()
+    config["brand"] = brand or "REGENTE"
     return _web_env().get_template("classifier_form.html.j2").render(
         brand=brand or "REGENTE",
         config_json=json.dumps(config, ensure_ascii=False),

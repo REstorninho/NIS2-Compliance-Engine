@@ -55,12 +55,15 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
   tempo real (replica `classify_entity`); (2) **autoavaliação de maturidade**
   — o questionário dos controlos exigidos para o nível resultante, com cálculo
   ao vivo de score, maturidade por função e roadmap de gaps por fase (replica
-  `run_assessment` + `build_remediation_roadmap`); (3) **histórico** local
-  (localStorage). As listas de setores, a regra de dimensão e o corpus de
-  controlos são injetados da fonte de verdade Python (paridade verificada com
-  Playwright), pelo que o formulário nunca diverge do motor. Exporta o perfil
-  e as respostas em YAML para alimentar a CLI (`classify`/`scaffold`/`assess`)
-  e o histórico em CSV.
+  `run_assessment` + `build_remediation_roadmap`); (3) **relatório HTML**
+  self-contained, gerado no browser com o radar de maturidade embebido
+  (replica `render_maturity_radar_svg` + `report.html`); (4) **histórico**
+  local (localStorage). As listas de setores, a regra de dimensão e o corpus
+  de controlos são injetados da fonte de verdade Python (paridade verificada
+  com Playwright, incluindo o polígono do radar), pelo que o formulário nunca
+  diverge do motor. Exporta o perfil e as respostas em YAML para alimentar a
+  CLI (`classify`/`scaffold`/`assess`), o relatório em HTML e o histórico em
+  CSV.
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
   consumíveis pelo SysReptor: gap report (com maturidade por função), roadmap
   de remediação faseado, Statement of Applicability, plano de recolha de
@@ -72,7 +75,7 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (74 testes).
+- `tests/` — testes do motor (75 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 

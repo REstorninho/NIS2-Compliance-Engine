@@ -61,3 +61,16 @@ def test_form_includes_maturity_questionnaire_and_results():
     match = re.search(r'<script id="nis2-config" type="application/json">(.*?)</script>', html, re.S)
     config = json.loads(match.group(1))
     assert len(config["controls"]) >= 30
+
+
+def test_form_includes_report_export_and_radar_data():
+    html = render_classifier_form(brand="Acme")
+    # Botão e construtor do relatório HTML no browser.
+    assert 'id="btn-report"' in html
+    assert "buildReportHtml" in html
+    assert "function radarSvg" in html
+    match = re.search(r'<script id="nis2-config" type="application/json">(.*?)</script>', html, re.S)
+    config = json.loads(match.group(1))
+    # A ordem canónica do radar e a marca têm de estar disponíveis para o JS.
+    assert config["radar_order"][0] == "Governar"
+    assert config["brand"] == "Acme"
