@@ -1,0 +1,56 @@
+# Política de Continuidade de Negócio e Recuperação de Desastre (BC/DR)
+
+**Entidade:** {{ entity.name }}
+**Versão:** 1.0
+**Data de aprovação:** {{ generated_at }}
+**Responsável:** {{ approver or "[a designar]" }}
+
+## 1. Objetivo
+
+Garantir a capacidade da **{{ entity.name }}** de manter ou recuperar a
+prestação dos seus serviços essenciais em caso de incidente disruptivo,
+em cumprimento do Art. 21.º(2)(c) do DL 125/2025 (gestão da continuidade do
+negócio e gestão de crises).
+
+## 2. Âmbito
+
+Aplica-se a todos os sistemas, processos e serviços identificados como
+críticos para a continuidade da atividade da {{ entity.name }}.
+
+## 3. Plano de continuidade de negócio (REC-01)
+
+O plano de continuidade de negócio (PCN) identifica:
+
+- Os processos e sistemas críticos e os respetivos objetivos de tempo de
+  recuperação (RTO) e ponto de recuperação (RPO);
+- Os procedimentos alternativos de operação em modo degradado;
+- As responsabilidades de ativação e gestão de crise.
+
+## 4. Cópias de segurança e testes de recuperação (PRT-10, REC-02)
+
+- As cópias de segurança dos sistemas e dados críticos são realizadas com
+  periodicidade adequada à criticidade de cada sistema, com cópias
+  armazenadas de forma isolada (offline/imutável) sempre que possível.
+- O restauro de cópias de segurança e a execução do plano de recuperação são
+  testados periodicamente (recomendação: pelo menos uma vez por ano), com
+  registo dos resultados e correção de desvios identificados.
+
+## 5. Critérios de ativação
+
+O PCN é ativado pelo responsável de cibersegurança ou pela direção, sempre
+que um incidente comprometa a disponibilidade de um sistema ou processo
+crítico além do RTO definido.
+
+## 6. Lições aprendidas (REC-03)
+
+Após cada ativação do PCN (real ou em exercício), é conduzida uma análise
+pós-incidente que documenta os desvios observados face ao plano e alimenta a
+sua melhoria contínua.
+
+## 7. Revisão
+
+Esta política e o respetivo PCN são revistos anualmente, após cada teste de
+recuperação, e após qualquer ativação real.
+
+---
+*Controlos relacionados: REC-01, REC-02, REC-03, PRT-10.*

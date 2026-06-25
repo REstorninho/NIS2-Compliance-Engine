@@ -11,10 +11,13 @@ from .classification import classify_entity, required_compliance_level
 from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType
 from .reporting import (
+    render_bcdr_policy,
     render_gap_report,
+    render_incident_response_policy,
     render_roadmap,
     render_self_identification,
     render_soa,
+    render_supplier_security_policy,
 )
 from .roadmap import build_remediation_roadmap
 from .soa import build_statement_of_applicability
@@ -146,6 +149,28 @@ def cmd_assess(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_policies(args: argparse.Namespace) -> int:
+    """Gera o pacote de políticas/procedimentos chave (evidência documental)
+    para a entidade: resposta a incidentes, segurança de fornecedores e
+    continuidade de negócio/BC-DR."""
+    entity = load_entity(Path(args.entity))
+
+    out_dir = Path(args.output)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "politica_resposta_incidentes.md").write_text(
+        render_incident_response_policy(entity, approver=args.approver), encoding="utf-8"
+    )
+    (out_dir / "politica_seguranca_fornecedores.md").write_text(
+        render_supplier_security_policy(entity, approver=args.approver), encoding="utf-8"
+    )
+    (out_dir / "politica_continuidade_bcdr.md").write_text(
+        render_bcdr_policy(entity, approver=args.approver), encoding="utf-8"
+    )
+
+    print(f"Pacote de políticas para {entity.name} escrito em: {out_dir}/")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="nis2",
@@ -170,6 +195,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_assess.add_argument("-o", "--output", default="out", help="Diretório de saída para os deliverables (default: ./out).")
     p_assess.add_argument("--level", choices=[l.value for l in ComplianceLevel], help="Forçar nível-alvo em vez do derivado da classificação.")
     p_assess.set_defaults(func=cmd_assess)
+
+    p_policies = sub.add_parser("policies", help="Gera o pacote de políticas chave (resposta a incidentes, fornecedores, BC/DR).")
+    p_policies.add_argument("entity", help="Ficheiro YAML com o perfil da entidade.")
+    p_policies.add_argument("-o", "--output", default="out/politicas", help="Diretório de saída (default: ./out/politicas).")
+    p_policies.add_argument("--approver", default="", help="Nome do responsável que aprova as políticas.")
+    p_policies.set_defaults(func=cmd_policies)
 
     return parser
 

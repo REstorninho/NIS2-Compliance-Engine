@@ -50,6 +50,7 @@ def test_cli_scaffold_then_assess(tmp_path):
     out_dir = tmp_path / "out"
     assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir)]) == 0
     assert (out_dir / "gap_report.md").exists()
+    assert (out_dir / "roadmap.md").exists()
     assert (out_dir / "statement_of_applicability.md").exists()
     assert (out_dir / "self_identification.md").exists()
 
@@ -69,3 +70,16 @@ def test_cli_scaffold_out_of_scope_returns_error(tmp_path):
         {"name": "Padaria", "sector": "alimentacao", "employees": 5, "annual_turnover_eur": 100_000},
     )
     assert main(["scaffold", str(entity)]) == 1
+
+
+def test_cli_policies_writes_all_three_documents(tmp_path):
+    entity = _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+    out_dir = tmp_path / "out" / "politicas"
+    assert main(["policies", str(entity), "-o", str(out_dir), "--approver", "Maria Silva"]) == 0
+    assert (out_dir / "politica_resposta_incidentes.md").exists()
+    assert (out_dir / "politica_seguranca_fornecedores.md").exists()
+    assert (out_dir / "politica_continuidade_bcdr.md").exists()
+    assert "Maria Silva" in (out_dir / "politica_resposta_incidentes.md").read_text(encoding="utf-8")

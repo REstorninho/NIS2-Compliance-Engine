@@ -26,7 +26,10 @@ ISO/IEC 27001:2022 e CIS Controls v8.
   de remediação faseado, Statement of Applicability, e o alerta inicial (24h)
   / relatório detalhado (72h) do regime de notificação de incidentes ao CNCS
   via MyCiber.
-- `tests/` — testes do motor (37 testes).
+- `templates/policies/` — pacote de políticas/procedimentos chave que servem
+  de evidência documental: resposta a incidentes, segurança de fornecedores e
+  continuidade de negócio/BC-DR.
+- `tests/` — testes do motor (39 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -53,6 +56,9 @@ nis2 scaffold examples/entity_camara.yaml -o answers.yaml
 # 3. Correr o assessment e gerar todos os deliverables (gap report, roadmap
 #    de remediação, SoA, autoidentificação) num diretório de saída
 nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/
+
+# 4. Gerar o pacote de políticas chave (evidência documental) para a entidade
+nis2 policies examples/entity_camara.yaml -o out/politicas --approver "Nome do Responsável"
 ```
 
 O fluxo típico de uma consultoria é: `classify` → `scaffold` → preencher o

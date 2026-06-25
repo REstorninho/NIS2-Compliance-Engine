@@ -1,0 +1,62 @@
+# Política de Segurança de Fornecedores e Cadeia de Abastecimento
+
+**Entidade:** {{ entity.name }}
+**Versão:** 1.0
+**Data de aprovação:** {{ generated_at }}
+**Responsável:** {{ approver or "[a designar]" }}
+
+## 1. Objetivo
+
+Definir os requisitos de segurança aplicáveis a fornecedores e prestadores de
+serviços da **{{ entity.name }}**, em cumprimento do Art. 21.º(2)(d) do
+DL 125/2025 (gestão do risco da cadeia de abastecimento) e do dever de
+diligência na seleção e supervisão de terceiros.
+
+## 2. Âmbito
+
+Aplica-se a todos os fornecedores e prestadores de serviços com acesso a
+sistemas, redes ou dados da {{ entity.name }}, ou cuja falha possa afetar a
+continuidade dos serviços essenciais/importantes prestados pela entidade.
+
+## 3. Inventário e classificação de fornecedores (IDN-04)
+
+Mantém-se um inventário atualizado de fornecedores críticos, classificados
+por nível de risco em função de:
+
+- Acesso a dados sensíveis ou sistemas críticos;
+- Grau de dependência operacional (existência de alternativas);
+- Histórico de incidentes de segurança.
+
+## 4. Requisitos contratuais mínimos
+
+Os contratos com fornecedores críticos devem incluir, sempre que aplicável:
+
+- Cláusulas de segurança da informação e confidencialidade;
+- Obrigação de notificação de incidentes de segurança que afetem a
+  {{ entity.name }}, num prazo definido contratualmente;
+- Direito de auditoria ou de solicitação de evidência de conformidade
+  (ex: certificações ISO 27001, relatórios de teste de penetração);
+- Condições de reversibilidade/transição em caso de cessação do contrato.
+
+## 5. Avaliação de risco da cadeia de abastecimento (GOV-04)
+
+Antes da contratação e periodicamente durante a relação contratual, avalia-se
+o risco de cibersegurança de cada fornecedor crítico, considerando:
+
+- A postura de segurança do fornecedor (questionário, certificações);
+- A criticidade do serviço prestado para a {{ entity.name }};
+- Riscos geopolíticos ou de concentração (ex: dependência de um único
+  fornecedor para um serviço essencial).
+
+## 6. Monitorização contínua
+
+Os fornecedores críticos são reavaliados pelo menos anualmente, ou após
+qualquer incidente de segurança relevante (próprio ou do fornecedor).
+
+## 7. Revisão
+
+Esta política é revista anualmente, ou quando se identificarem alterações
+significativas na cadeia de fornecimento.
+
+---
+*Controlos relacionados: GOV-04, IDN-04.*

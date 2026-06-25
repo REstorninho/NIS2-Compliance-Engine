@@ -4,8 +4,11 @@ from nis2_engine import (
     build_remediation_roadmap,
     classify_entity,
     load_controls,
+    render_bcdr_policy,
+    render_incident_response_policy,
     render_roadmap,
     render_self_identification,
+    render_supplier_security_policy,
     run_assessment,
 )
 from nis2_engine.classification import required_compliance_level
@@ -40,3 +43,15 @@ def test_render_roadmap_lists_open_gaps_by_phase():
     report = render_roadmap(roadmap)
     assert "Fase 1" in report
     assert "PRT-01" in report
+
+
+def test_policy_templates_mention_entity_and_approver():
+    entity = Entity(name="Câmara Municipal de Exemplo", sector="administracao_publica", employees=300, annual_turnover_eur=0)
+
+    incident_policy = render_incident_response_policy(entity, approver="Maria Silva")
+    supplier_policy = render_supplier_security_policy(entity, approver="Maria Silva")
+    bcdr_policy = render_bcdr_policy(entity, approver="Maria Silva")
+
+    for policy in (incident_policy, supplier_policy, bcdr_policy):
+        assert entity.name in policy
+        assert "Maria Silva" in policy

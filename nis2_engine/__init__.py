@@ -26,6 +26,9 @@ from .reporting import (
     render_incident_alert,
     render_incident_report,
     render_self_identification,
+    render_incident_response_policy,
+    render_supplier_security_policy,
+    render_bcdr_policy,
 )
 
 __all__ = [
@@ -57,4 +60,7 @@ __all__ = [
     "render_incident_alert",
     "render_incident_report",
     "render_self_identification",
+    "render_incident_response_policy",
+    "render_supplier_security_policy",
+    "render_bcdr_policy",
 ]

@@ -1,0 +1,72 @@
+# Política e Plano de Resposta a Incidentes de Cibersegurança
+
+**Entidade:** {{ entity.name }}
+**Versão:** 1.0
+**Data de aprovação:** {{ generated_at }}
+**Responsável:** {{ approver or "[a designar]" }}
+
+## 1. Objetivo
+
+Estabelecer o processo de deteção, classificação, resposta, recuperação e
+notificação de incidentes de cibersegurança na **{{ entity.name }}**, em
+cumprimento do artigo 21.º e 23.º do DL 125/2025 (transposição da Diretiva
+NIS2) e do Regulamento n.º 756/2026.
+
+## 2. Âmbito
+
+Aplica-se a todos os sistemas, redes e dados sob responsabilidade da
+{{ entity.name }}, incluindo serviços prestados por terceiros quando
+relevante para a continuidade da atividade.
+
+## 3. Classificação e triagem (RSP-02)
+
+Os incidentes são classificados por gravidade (baixo/médio/alto/crítico) e
+por impacto (confidencialidade, integridade, disponibilidade), de acordo com
+critérios documentados que determinam:
+
+- A prioridade e os recursos de resposta alocados;
+- A necessidade de notificação ao CNCS via MyCiber (incidentes com impacto
+  significativo nos termos do Art. 23.º).
+
+## 4. Equipa e papéis de resposta
+
+| Papel | Responsabilidade |
+|---|---|
+| Responsável de cibersegurança | Decisão de classificação e acionamento do plano |
+| Ponto de contacto MyCiber | Submissão das notificações ao CNCS |
+| Equipa técnica | Contenção, erradicação e recuperação |
+| Direção/órgão de gestão | Decisões de impacto reputacional/legal, comunicação externa |
+
+## 5. Fluxo de comunicação de incidentes (RSP-03)
+
+1. **Deteção e registo interno** — qualquer colaborador deve reportar
+   indícios de incidente ao responsável de cibersegurança.
+2. **Triagem** — classificação de gravidade no prazo máximo de algumas horas
+   após a deteção.
+3. **Notificação ao CNCS via MyCiber** (quando aplicável, Art. 23.º):
+   - **Alerta inicial:** até 24h após o conhecimento do incidente.
+   - **Relatório detalhado/intermédio:** até 72h.
+   - **Relatório final:** até 1 mês após o relatório detalhado.
+4. **Comunicação a titulares de dados e outras partes interessadas**, quando
+   aplicável (RGPD Art. 33.º/34.º, em coordenação com o Encarregado de
+   Proteção de Dados se existir).
+
+## 6. Contenção, erradicação e recuperação
+
+A equipa técnica aplica as medidas de contenção (isolamento de sistemas
+afetados), erradicação da causa, e recuperação de acordo com o plano de
+continuidade de negócio (ver Política de Continuidade BC/DR).
+
+## 7. Lições aprendidas (REC-03)
+
+No prazo de 30 dias após o encerramento de qualquer incidente de gravidade
+média ou superior, é realizada uma análise pós-incidente (post-mortem) que
+identifica a causa raiz e gera ações de melhoria, registadas e
+acompanhadas até ao fecho.
+
+## 8. Revisão
+
+Esta política é revista anualmente, ou após qualquer incidente relevante.
+
+---
+*Controlos relacionados: RSP-01, RSP-02, RSP-03, REC-01, REC-03.*

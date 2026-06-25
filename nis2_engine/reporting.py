@@ -17,6 +17,7 @@ from .models import (
 from .roadmap import RemediationRoadmap
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "deliverables"
+_POLICIES_DIR = Path(__file__).resolve().parent.parent / "templates" / "policies"
 
 
 def _env() -> Environment:
@@ -26,6 +27,32 @@ def _env() -> Environment:
         trim_blocks=False,
         lstrip_blocks=False,
     )
+
+
+def _policy_env() -> Environment:
+    return Environment(
+        loader=FileSystemLoader(_POLICIES_DIR),
+        autoescape=select_autoescape(enabled_extensions=(), default=False),
+        trim_blocks=False,
+        lstrip_blocks=False,
+    )
+
+
+def _render_policy(template_name: str, entity: Entity, approver: str = "", generated_at: str | None = None) -> str:
+    generated_at = generated_at or datetime.now().strftime("%Y-%m-%d")
+    return _policy_env().get_template(template_name).render(entity=entity, approver=approver, generated_at=generated_at)
+
+
+def render_incident_response_policy(entity: Entity, approver: str = "", generated_at: str | None = None) -> str:
+    return _render_policy("politica_resposta_incidentes.md.j2", entity, approver, generated_at)
+
+
+def render_supplier_security_policy(entity: Entity, approver: str = "", generated_at: str | None = None) -> str:
+    return _render_policy("politica_seguranca_fornecedores.md.j2", entity, approver, generated_at)
+
+
+def render_bcdr_policy(entity: Entity, approver: str = "", generated_at: str | None = None) -> str:
+    return _render_policy("politica_continuidade_bcdr.md.j2", entity, approver, generated_at)
 
 
 def render_gap_report(result: AssessmentResult) -> str:
