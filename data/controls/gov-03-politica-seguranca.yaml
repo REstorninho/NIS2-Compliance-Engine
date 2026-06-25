@@ -1,0 +1,16 @@
+id: GOV-03
+title: Política de segurança da informação
+description: >
+  Existência de uma política de segurança da informação aprovada pela gestão,
+  comunicada à organização e revista periodicamente.
+qnrcs_function: Governar
+crosswalk:
+  nis2_article: ["Art. 21(2)(a)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.5.1"]
+  cis_controls_v8: ["14.1"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: documental

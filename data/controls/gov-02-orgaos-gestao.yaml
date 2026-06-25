@@ -1,0 +1,17 @@
+id: GOV-02
+title: Responsabilidade e formação dos órgãos de gestão
+description: >
+  Os órgãos de gestão aprovam as medidas de gestão de risco de cibersegurança,
+  supervisionam a sua implementação e frequentam formação adequada. A
+  responsabilidade pessoal pode chegar à inibição temporária de funções.
+qnrcs_function: Governar
+crosswalk:
+  nis2_article: ["Art. 20"]
+  regulamento_756_2026: ["Anexo I"]
+  iso27001_annex_a: ["A.5.1", "A.5.4"]
+  cis_controls_v8: ["14.1"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: organizacional

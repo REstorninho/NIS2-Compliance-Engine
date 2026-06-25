@@ -1,0 +1,20 @@
+id: DET-02
+title: Deteção de intrusões e código malicioso
+description: >
+  Capacidade de deteção de intrusões e atividade maliciosa na rede e nos
+  sistemas (IDS/IPS, EDR), com regras de alerta e resposta automatizada onde
+  aplicável.
+qnrcs_function: Detetar
+crosswalk:
+  nis2_article: ["Art. 21(2)(b)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.16"]
+  cis_controls_v8: ["13.1", "13.3"]
+levels:
+  basico: false
+  substancial: false
+  elevado: true
+evidence_type: tecnica_automatizada
+evidence_contract:
+  source_hint: "NIDS/EDR (ex: Security Onion, Suricata, Wazuh)"
+  fields: ["sensors_count", "coverage_pct", "alerts_last_30d", "checked_at"]

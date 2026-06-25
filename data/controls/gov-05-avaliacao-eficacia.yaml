@@ -1,0 +1,16 @@
+id: GOV-05
+title: Avaliação da eficácia das medidas de cibersegurança
+description: >
+  Políticas e procedimentos para avaliar a eficácia das medidas de gestão de
+  risco de cibersegurança (ex: auditorias internas, indicadores, testes).
+qnrcs_function: Governar
+crosswalk:
+  nis2_article: ["Art. 21(2)(f)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.5.35", "A.5.36"]
+  cis_controls_v8: ["18.1"]
+levels:
+  basico: false
+  substancial: false
+  elevado: true
+evidence_type: organizacional

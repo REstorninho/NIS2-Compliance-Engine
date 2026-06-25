@@ -1,0 +1,17 @@
+id: PRT-04
+title: Gestão de acessos e privilégios mínimos
+description: >
+  Política de controlo de acessos baseada no princípio do privilégio mínimo,
+  com gestão do ciclo de vida das contas e revisão periódica de acessos
+  privilegiados.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(i)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.5.15", "A.5.18", "A.8.2"]
+  cis_controls_v8: ["5.1", "6.1", "6.8"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: tecnica_manual

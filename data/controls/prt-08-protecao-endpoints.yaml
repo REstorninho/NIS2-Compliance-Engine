@@ -1,0 +1,20 @@
+id: PRT-08
+title: Proteção de endpoints (anti-malware/EDR)
+description: >
+  Soluções de proteção de endpoints contra código malicioso (anti-malware/EDR)
+  implementadas, atualizadas e monitorizadas em estações de trabalho e
+  servidores.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(g)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.7"]
+  cis_controls_v8: ["10.1", "10.2"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: tecnica_automatizada
+evidence_contract:
+  source_hint: "EDR/antivírus de gestão central (ex: Wazuh, Defender)"
+  fields: ["endpoints_total", "endpoints_protected", "signatures_up_to_date_pct", "checked_at"]

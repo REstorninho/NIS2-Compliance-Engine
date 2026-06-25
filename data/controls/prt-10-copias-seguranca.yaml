@@ -1,0 +1,20 @@
+id: PRT-10
+title: Cópias de segurança (backups)
+description: >
+  Realização regular de cópias de segurança dos dados e sistemas críticos,
+  com pelo menos uma cópia isolada/imutável (offline ou air-gapped) e
+  proteção contra alteração.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(c)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.13"]
+  cis_controls_v8: ["11.2", "11.3"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: tecnica_automatizada
+evidence_contract:
+  source_hint: "Solução de backup (ex: Veeam)"
+  fields: ["jobs_total", "jobs_successful_last_run", "has_immutable_copy", "last_backup_at"]

@@ -1,0 +1,17 @@
+id: IDN-03
+title: Classificação da informação
+description: >
+  Esquema de classificação da informação por criticidade/confidencialidade e
+  regras de tratamento associadas a cada nível.
+qnrcs_function: Identificar
+crosswalk:
+  nis2_article: ["Art. 21(2)(a)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.5.12", "A.5.13"]
+  cis_controls_v8: ["3.1", "3.2"]
+  rgpd: ["Art. 5", "Art. 32"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: documental

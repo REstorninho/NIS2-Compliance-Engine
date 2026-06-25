@@ -1,0 +1,16 @@
+id: REC-03
+title: Análise pós-incidente e lições aprendidas
+description: >
+  Processo de análise pós-incidente (post-mortem) que identifica a causa raiz,
+  documenta lições aprendidas e alimenta a melhoria das medidas de segurança.
+qnrcs_function: Recuperar
+crosswalk:
+  nis2_article: ["Art. 21(2)(b)", "Art. 21(2)(f)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.5.27"]
+  cis_controls_v8: ["17.8"]
+levels:
+  basico: false
+  substancial: false
+  elevado: true
+evidence_type: organizacional

@@ -1,0 +1,17 @@
+id: GOV-04
+title: Gestão de risco da cadeia de abastecimento
+description: >
+  Políticas e procedimentos para gerir os riscos de cibersegurança decorrentes
+  das relações com fornecedores e prestadores de serviços, incluindo requisitos
+  contratuais de segurança.
+qnrcs_function: Governar
+crosswalk:
+  nis2_article: ["Art. 21(2)(d)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.5.19", "A.5.20", "A.5.21"]
+  cis_controls_v8: ["15.1", "15.4"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: documental

@@ -1,0 +1,17 @@
+id: PRT-05
+title: Criptografia e cifragem de dados
+description: >
+  Políticas de uso de criptografia, incluindo cifragem de dados em trânsito e
+  em repouso, e gestão do ciclo de vida das chaves.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(h)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.24"]
+  cis_controls_v8: ["3.6", "3.10", "3.11"]
+  rgpd: ["Art. 32"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: tecnica_manual

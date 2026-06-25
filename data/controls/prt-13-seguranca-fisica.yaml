@@ -1,0 +1,17 @@
+id: PRT-13
+title: Segurança física e do ambiente
+description: >
+  Controlos de segurança física dos locais que albergam sistemas de
+  informação críticos (controlo de acesso físico, proteção contra ameaças
+  ambientais, energia).
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(a)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.7.1", "A.7.2", "A.7.11"]
+  cis_controls_v8: ["12.1"]
+levels:
+  basico: false
+  substancial: false
+  elevado: true
+evidence_type: tecnica_manual

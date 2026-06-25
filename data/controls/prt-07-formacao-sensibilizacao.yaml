@@ -1,0 +1,17 @@
+id: PRT-07
+title: Formação e sensibilização em cibersegurança
+description: >
+  Programa de formação e sensibilização em higiene cibernética para todos os
+  colaboradores, incluindo simulações de phishing e formação específica por
+  função.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(g)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.6.3"]
+  cis_controls_v8: ["14.1", "14.2"]
+levels:
+  basico: true
+  substancial: true
+  elevado: true
+evidence_type: organizacional

@@ -1,0 +1,16 @@
+id: PRT-09
+title: Segurança na aquisição, desenvolvimento e manutenção
+description: >
+  Requisitos de segurança no ciclo de vida de aquisição e desenvolvimento de
+  sistemas (SDLC seguro), incluindo gestão e divulgação de vulnerabilidades.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(e)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.25", "A.8.26", "A.8.28"]
+  cis_controls_v8: ["16.1", "16.11"]
+levels:
+  basico: false
+  substancial: false
+  elevado: true
+evidence_type: documental

@@ -1,0 +1,16 @@
+id: REC-02
+title: Testes de recuperação e de cópias de segurança
+description: >
+  Testes periódicos de restauro de cópias de segurança e de execução dos
+  planos de recuperação, com registo dos resultados e correção de desvios.
+qnrcs_function: Recuperar
+crosswalk:
+  nis2_article: ["Art. 21(2)(c)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.8.13", "A.5.30"]
+  cis_controls_v8: ["11.5"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: organizacional

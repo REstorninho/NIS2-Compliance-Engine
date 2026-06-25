@@ -1,0 +1,17 @@
+id: PRT-06
+title: Segurança de recursos humanos
+description: >
+  Procedimentos de segurança no ciclo de vida do colaborador: verificação na
+  contratação, acordos de confidencialidade, e revogação de acessos na
+  cessação de funções.
+qnrcs_function: Proteger
+crosswalk:
+  nis2_article: ["Art. 21(2)(i)"]
+  regulamento_756_2026: ["Anexo III"]
+  iso27001_annex_a: ["A.6.1", "A.6.2", "A.6.5"]
+  cis_controls_v8: ["6.1", "6.2"]
+levels:
+  basico: false
+  substancial: true
+  elevado: true
+evidence_type: documental
