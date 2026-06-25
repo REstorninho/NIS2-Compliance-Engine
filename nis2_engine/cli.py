@@ -12,9 +12,11 @@ from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType
 from .reporting import (
     render_gap_report,
+    render_roadmap,
     render_self_identification,
     render_soa,
 )
+from .roadmap import build_remediation_roadmap
 from .soa import build_statement_of_applicability
 
 
@@ -126,10 +128,12 @@ def cmd_assess(args: argparse.Namespace) -> int:
     answers = load_answers(Path(args.answers))
     result = run_assessment(entity, target_level, controls, answers)
     soa = build_statement_of_applicability(result, controls)
+    roadmap = build_remediation_roadmap(result)
 
     out_dir = Path(args.output)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "gap_report.md").write_text(render_gap_report(result), encoding="utf-8")
+    (out_dir / "roadmap.md").write_text(render_roadmap(roadmap), encoding="utf-8")
     (out_dir / "statement_of_applicability.md").write_text(render_soa(soa), encoding="utf-8")
     (out_dir / "self_identification.md").write_text(
         render_self_identification(entity, entity_type, target_level), encoding="utf-8"

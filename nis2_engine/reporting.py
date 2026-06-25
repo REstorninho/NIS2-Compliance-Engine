@@ -14,6 +14,7 @@ from .models import (
     IncidentNotification,
     StatementOfApplicability,
 )
+from .roadmap import RemediationRoadmap
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "deliverables"
 
@@ -29,6 +30,10 @@ def _env() -> Environment:
 
 def render_gap_report(result: AssessmentResult) -> str:
     return _env().get_template("gap_report.md.j2").render(result=result, maturity_labels=MATURITY_LABELS)
+
+
+def render_roadmap(roadmap: RemediationRoadmap) -> str:
+    return _env().get_template("roadmap.md.j2").render(roadmap=roadmap)
 
 
 def render_soa(soa: StatementOfApplicability, generated_at: str | None = None) -> str:

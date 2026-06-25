@@ -1,0 +1,29 @@
+# Roadmap de Remediação NIS2 — {{ roadmap.entity_name }}
+
+**Nível-alvo:** {{ roadmap.target_level | capitalize }}
+
+Plano faseado de remediação dos gaps identificados, priorizado por impacto
+(função QNRCS) e prazo de implementação recomendado.
+
+## Maturidade atual por função QNRCS
+
+| Função | Maturidade média (0-5) |
+|---|---|
+{% for function, avg in roadmap.maturity_by_function.items() -%}
+| {{ function }} | {{ avg }} |
+{% endfor %}
+
+{% for phase in roadmap.phases %}
+## {{ phase.name }} ({{ phase.timeframe }}) — prioridade {{ phase.priority | upper }}
+
+| Controlo | Título | Função QNRCS | Maturidade atual |
+|---|---|---|---|
+{% for gap in phase.gaps -%}
+| {{ gap.control.id }} | {{ gap.control.title }} | {{ gap.control.qnrcs_function }} | {{ gap.maturity }} |
+{% endfor %}
+
+{% endfor %}
+{% if not roadmap.phases %}
+Não foram identificados gaps por remediar — todos os controlos exigidos ao
+nível-alvo estão implementados.
+{% endif %}

@@ -16,13 +16,17 @@ ISO/IEC 27001:2022 e CIS Controls v8.
   - `classification.py` — motor de âmbito: essencial / importante / entidade
     pública relevante, regra de dimensão, exceções setoriais → nível de risco
     exigido.
-  - `assessment.py` — motor de maturidade: cruza respostas com os controlos
-    exigidos para o nível do cliente, calcula gap-analysis e roadmap.
+  - `assessment.py` — motor de maturidade graduada (escala 0-5): cruza
+    respostas com os controlos exigidos para o nível do cliente, calcula
+    gap-analysis, score de conformidade e maturidade média por função QNRCS.
+  - `roadmap.py` — agrupa os gaps por remediar num roadmap faseado por
+    prioridade (0-3 / 3-6 / 6-12 meses).
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
-  consumíveis pelo SysReptor: gap report, Statement of Applicability, e o
-  alerta inicial (24h) / relatório detalhado (72h) do regime de notificação
-  de incidentes ao CNCS via MyCiber.
-- `tests/` — testes do motor (24 testes).
+  consumíveis pelo SysReptor: gap report (com maturidade por função), roadmap
+  de remediação faseado, Statement of Applicability, e o alerta inicial (24h)
+  / relatório detalhado (72h) do regime de notificação de incidentes ao CNCS
+  via MyCiber.
+- `tests/` — testes do motor (37 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -46,8 +50,8 @@ nis2 classify examples/entity_camara.yaml -o out/self_identification.md
 # 2. Gerar um questionário de maturidade em branco para preencher
 nis2 scaffold examples/entity_camara.yaml -o answers.yaml
 
-# 3. Correr o assessment e gerar todos os deliverables (gap report, SoA,
-#    autoidentificação) num diretório de saída
+# 3. Correr o assessment e gerar todos os deliverables (gap report, roadmap
+#    de remediação, SoA, autoidentificação) num diretório de saída
 nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/
 ```
 

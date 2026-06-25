@@ -18,8 +18,10 @@ from .assessment import run_assessment
 from .soa import build_statement_of_applicability
 from .incident import compute_deadlines, NotificationDeadlines
 from .classification import required_compliance_level
+from .roadmap import build_remediation_roadmap, RemediationRoadmap, RoadmapPhase
 from .reporting import (
     render_gap_report,
+    render_roadmap,
     render_soa,
     render_incident_alert,
     render_incident_report,
@@ -45,8 +47,12 @@ __all__ = [
     "required_compliance_level",
     "run_assessment",
     "build_statement_of_applicability",
+    "build_remediation_roadmap",
+    "RemediationRoadmap",
+    "RoadmapPhase",
     "compute_deadlines",
     "render_gap_report",
+    "render_roadmap",
     "render_soa",
     "render_incident_alert",
     "render_incident_report",

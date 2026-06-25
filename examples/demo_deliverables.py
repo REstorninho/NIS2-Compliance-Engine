@@ -11,10 +11,12 @@ from jinja2 import Environment, FileSystemLoader
 from nis2_engine import (
     Entity,
     IncidentNotification,
+    build_remediation_roadmap,
     build_statement_of_applicability,
     compute_deadlines,
     load_controls,
     render_gap_report,
+    render_roadmap,
     run_assessment,
 )
 from nis2_engine.classification import classify_entity, required_compliance_level
@@ -56,11 +58,15 @@ def main() -> None:
     _print_section("1. Gap Report")
     print(render_gap_report(result))
 
-    _print_section("2. Statement of Applicability")
+    _print_section("2. Roadmap de Remediação")
+    roadmap = build_remediation_roadmap(result)
+    print(render_roadmap(roadmap))
+
+    _print_section("3. Statement of Applicability")
     soa = build_statement_of_applicability(result, controls)
     print(ENV.get_template("soa.md.j2").render(soa=soa, generated_at=datetime.now().strftime("%Y-%m-%d")))
 
-    _print_section("3. Alerta inicial de incidente (24h/72h)")
+    _print_section("4. Alerta inicial de incidente (24h/72h)")
     incident = IncidentNotification(
         incident_id="INC-2026-001",
         entity=entity,
