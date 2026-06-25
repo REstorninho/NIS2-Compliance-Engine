@@ -4,6 +4,16 @@ Plataforma-metodologia de conformidade com o regime jurídico da cibersegurança
 (DL 125/2025 + Regulamento n.º 756/2026), alinhada com o QNRCS, NIST CSF 2.0,
 ISO/IEC 27001:2022 e CIS Controls v8.
 
+Cobre o ciclo de conformidade de ponta a ponta: **classificação de âmbito**
+(essencial / importante / entidade pública relevante / fora de âmbito),
+**autoavaliação de maturidade** e gap-analysis, **roadmap** de remediação
+faseado, **deliverables** prontos a entregar (gap report, Statement of
+Applicability, plano de recolha de evidência, relatório HTML imprimível,
+pacote de políticas), **notificação de incidentes** ao CNCS via MyCiber e
+**rastreabilidade jurídica** do corpus. Há duas portas de entrada: um
+formulário **HTML** que corre no browser (`nis2 form`) e uma **CLI** sobre
+ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
+
 ## Estrutura
 
 - `CLAUDE.md` — system prompt do copiloto **REGENTE**: identidade e papel,
@@ -64,11 +74,11 @@ ISO/IEC 27001:2022 e CIS Controls v8.
 ## Estado de validação jurídica
 
 Os setores e níveis em `data/controls/` e `nis2_engine/classification.py`
-foram confirmados via fontes secundárias (CMS, Crowe, PWC) — o acesso direto
-ao texto do Diário da República está bloqueado pela política de rede desta
-sessão (DRE devolve 403 ao proxy). **Antes de usar com clientes reais**, os
-setores, exceções de dimensão e medidas mínimas devem ser validados
-artigo-a-artigo contra o Regulamento n.º 756/2026 e o DL 125/2025 publicados.
+foram confirmados via fontes secundárias (CMS, Crowe, PWC) e **ainda não**
+artigo-a-artigo contra o texto oficial publicado em Diário da República.
+**Antes de usar com clientes reais**, os setores, exceções de dimensão e
+medidas mínimas devem ser validados contra o Regulamento n.º 756/2026 e o
+DL 125/2025 publicados.
 
 Este estado é rastreado de forma explícita e auditável: cada `Control` tem um
 campo `estado_validacao` (`confirmado` / `por_validar`, por omissão
@@ -78,8 +88,8 @@ continuam pendentes — à medida que cada controlo for validado contra o texto
 oficial, basta atualizar o respetivo YAML em `data/controls/` com
 `estado_validacao: confirmado` e `fonte: ...`.
 
-Para facilitar essa validação manual (sem acesso direto ao DRE nesta sessão),
-`nis2 audit --checklist <ficheiro.csv>` exporta um checklist em CSV — uma
+Para facilitar essa validação manual, `nis2 audit --checklist <ficheiro.csv>`
+exporta um checklist em CSV — uma
 linha por controlo (mais uma para a classificação setorial) com o artigo
 NIS2/Regulamento atualmente citado no crosswalk e colunas em branco
 (`artigo_confirmado_dre`, `data_confirmacao`, `confirmado_por`,
@@ -92,6 +102,19 @@ Depois de `pip install -e .`, fica disponível o comando `nis2`. Erros comuns
 (ficheiro em falta, campo obrigatório por preencher, YAML inválido) devolvem
 uma mensagem clara em `stderr` e código de saída 1 — não um *traceback*
 Python. `nis2 --version` mostra a versão instalada.
+
+| Comando | O que faz |
+|---|---|
+| `nis2 form` | Gera o formulário HTML de classificação de âmbito (browser, com histórico local). |
+| `nis2 list-controls` | Lista o catálogo de controlos QNRCS (filtrável por `--level`/`--function`). |
+| `nis2 classify` | Classifica a entidade e gera o relatório de autoidentificação MyCiber. |
+| `nis2 scaffold` | Gera o questionário de maturidade em branco para o nível-alvo. |
+| `nis2 assess` | Corre o assessment e gera todos os deliverables (gap report, roadmap, SoA, evidência, radar, HTML). |
+| `nis2 policies` | Gera o pacote de políticas chave (resposta a incidentes, fornecedores, BC/DR). |
+| `nis2 audit` | Relatório de rastreabilidade jurídica + checklist de validação manual (`--checklist`). |
+| `nis2 history` | Lista os snapshots de assessment gravados para uma entidade. |
+| `nis2 progress` | Compara os dois assessments mais recentes e gera o relatório de evolução. |
+| `nis2 incident` | Gera o alerta inicial (24h) e o relatório detalhado (72h) de notificação ao CNCS. |
 
 ```bash
 # 0a. Gerar um formulário HTML para classificar entidades no browser, sem ter
