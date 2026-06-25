@@ -37,6 +37,12 @@ class Control:
     description: str = ""
     crosswalk: Crosswalk = field(default_factory=Crosswalk)
     evidence_contract: dict | None = None
+    # Rastreabilidade jurídica: se o crosswalk legal foi confirmado
+    # artigo-a-artigo contra o texto oficial (DRE) ou apenas via fontes
+    # secundárias. Por omissão "por_validar" — só passa a "confirmado" depois
+    # de uma validação explícita (ver `nis2 audit`).
+    estado_validacao: str = "por_validar"
+    fonte: str = ""
 
     def required_at(self, level: ComplianceLevel) -> bool:
         return self.levels.get(level.value, False)

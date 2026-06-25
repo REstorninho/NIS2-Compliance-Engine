@@ -7,10 +7,12 @@ from pathlib import Path
 import yaml
 
 from .assessment import run_assessment
+from .audit import build_audit_report
 from .classification import classify_entity, required_compliance_level
 from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType
 from .reporting import (
+    render_audit_report,
     render_bcdr_policy,
     render_gap_report,
     render_incident_response_policy,
@@ -171,6 +173,23 @@ def cmd_policies(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_audit(args: argparse.Namespace) -> int:
+    """Gera o relatório de rastreabilidade jurídica: que controlos e que
+    classificação setorial já foram confirmados artigo-a-artigo contra o
+    texto oficial, e o que continua por validar."""
+    controls = load_controls()
+    report = build_audit_report(controls)
+
+    print(f"Classificação setorial: {report.classification_status} ({report.classification_source})")
+    print(f"Controlos confirmados:  {len(report.confirmed_controls)}/{report.total_controls}")
+    print(f"Controlos por validar:  {len(report.pending_controls)}/{report.total_controls} ({report.pending_pct}%)")
+
+    if args.output:
+        Path(args.output).write_text(render_audit_report(report), encoding="utf-8")
+        print(f"\nRelatório de auditoria escrito em: {args.output}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="nis2",
@@ -201,6 +220,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_policies.add_argument("-o", "--output", default="out/politicas", help="Diretório de saída (default: ./out/politicas).")
     p_policies.add_argument("--approver", default="", help="Nome do responsável que aprova as políticas.")
     p_policies.set_defaults(func=cmd_policies)
+
+    p_audit = sub.add_parser("audit", help="Gera o relatório de rastreabilidade jurídica (controlos confirmados vs. por validar).")
+    p_audit.add_argument("-o", "--output", help="Caminho para escrever o relatório de auditoria (markdown).")
+    p_audit.set_defaults(func=cmd_audit)
 
     return parser
 

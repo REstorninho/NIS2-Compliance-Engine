@@ -5,6 +5,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from .audit import AuditReport
 from .incident import NotificationDeadlines, compute_deadlines
 from .models import (
     MATURITY_LABELS,
@@ -61,6 +62,11 @@ def render_gap_report(result: AssessmentResult) -> str:
 
 def render_roadmap(roadmap: RemediationRoadmap) -> str:
     return _env().get_template("roadmap.md.j2").render(roadmap=roadmap)
+
+
+def render_audit_report(report: AuditReport, generated_at: str | None = None) -> str:
+    generated_at = generated_at or datetime.now().strftime("%Y-%m-%d")
+    return _env().get_template("audit_report.md.j2").render(report=report, generated_at=generated_at)
 
 
 def render_soa(soa: StatementOfApplicability, generated_at: str | None = None) -> str:

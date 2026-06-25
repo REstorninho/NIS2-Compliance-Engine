@@ -60,6 +60,15 @@
         "source_hint": {"type": "string"},
         "fields": {"type": "array", "items": {"type": "string"}}
       }
+    },
+    "estado_validacao": {
+      "type": "string",
+      "enum": ["confirmado", "por_validar"],
+      "description": "Se o crosswalk legal deste controlo foi confirmado artigo-a-artigo contra o texto oficial (DRE), ou apenas via fontes secundárias"
+    },
+    "fonte": {
+      "type": "string",
+      "description": "Fonte usada para confirmar o crosswalk legal (ex: 'DRE - Art. 21 DL 125/2025', 'CMS Lawtax, consultado em ...')"
     }
   },
   "additionalProperties": false

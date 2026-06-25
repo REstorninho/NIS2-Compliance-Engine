@@ -21,15 +21,19 @@ ISO/IEC 27001:2022 e CIS Controls v8.
     gap-analysis, score de conformidade e maturidade média por função QNRCS.
   - `roadmap.py` — agrupa os gaps por remediar num roadmap faseado por
     prioridade (0-3 / 3-6 / 6-12 meses).
+  - `audit.py` — relatório de rastreabilidade jurídica: que controlos e que
+    classificação setorial já foram confirmados artigo-a-artigo contra o
+    texto oficial (campo `estado_validacao` em cada `Control`), e o que
+    continua por validar via fontes secundárias.
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
   consumíveis pelo SysReptor: gap report (com maturidade por função), roadmap
-  de remediação faseado, Statement of Applicability, e o alerta inicial (24h)
-  / relatório detalhado (72h) do regime de notificação de incidentes ao CNCS
-  via MyCiber.
+  de remediação faseado, Statement of Applicability, relatório de auditoria
+  jurídica, e o alerta inicial (24h) / relatório detalhado (72h) do regime de
+  notificação de incidentes ao CNCS via MyCiber.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (39 testes).
+- `tests/` — testes do motor (42 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -41,6 +45,14 @@ ao texto do Diário da República está bloqueado pela política de rede desta
 sessão (DRE devolve 403 ao proxy). **Antes de usar com clientes reais**, os
 setores, exceções de dimensão e medidas mínimas devem ser validados
 artigo-a-artigo contra o Regulamento n.º 756/2026 e o DL 125/2025 publicados.
+
+Este estado é rastreado de forma explícita e auditável: cada `Control` tem um
+campo `estado_validacao` (`confirmado` / `por_validar`, por omissão
+`por_validar`) e `fonte`. Corre `nis2 audit` para ver, em qualquer momento,
+exatamente quantos controlos já foram confirmados artigo-a-artigo e quantos
+continuam pendentes — à medida que cada controlo for validado contra o texto
+oficial, basta atualizar o respetivo YAML em `data/controls/` com
+`estado_validacao: confirmado` e `fonte: ...`.
 
 ## Utilização via CLI
 
@@ -59,6 +71,9 @@ nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/
 
 # 4. Gerar o pacote de políticas chave (evidência documental) para a entidade
 nis2 policies examples/entity_camara.yaml -o out/politicas --approver "Nome do Responsável"
+
+# 5. Ver o estado de rastreabilidade jurídica do corpus (confirmado vs. por validar)
+nis2 audit -o out/audit_report.md
 ```
 
 O fluxo típico de uma consultoria é: `classify` → `scaffold` → preencher o

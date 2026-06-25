@@ -19,6 +19,7 @@ from .soa import build_statement_of_applicability
 from .incident import compute_deadlines, NotificationDeadlines
 from .classification import required_compliance_level
 from .roadmap import build_remediation_roadmap, RemediationRoadmap, RoadmapPhase
+from .audit import build_audit_report, AuditReport
 from .reporting import (
     render_gap_report,
     render_roadmap,
@@ -29,6 +30,7 @@ from .reporting import (
     render_incident_response_policy,
     render_supplier_security_policy,
     render_bcdr_policy,
+    render_audit_report,
 )
 
 __all__ = [
@@ -53,6 +55,8 @@ __all__ = [
     "build_remediation_roadmap",
     "RemediationRoadmap",
     "RoadmapPhase",
+    "build_audit_report",
+    "AuditReport",
     "compute_deadlines",
     "render_gap_report",
     "render_roadmap",
@@ -63,4 +67,5 @@ __all__ = [
     "render_incident_response_policy",
     "render_supplier_security_policy",
     "render_bcdr_policy",
+    "render_audit_report",
 ]

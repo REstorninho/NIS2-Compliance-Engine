@@ -1,0 +1,43 @@
+# Relatório de Rastreabilidade Jurídica
+
+**Data:** {{ generated_at }}
+
+Este relatório lista o estado de validação do corpus normativo (corpus de
+controlos e classificação setorial) face ao texto oficial publicado em
+Diário da República. Um controlo "confirmado" foi validado artigo-a-artigo;
+"por validar" assenta apenas em fontes secundárias e **não deve ser usado
+como base única para uma decisão de conformidade com um cliente real**.
+
+## Classificação setorial (Anexos I/II do DL 125/2025)
+
+- **Estado:** {{ report.classification_status | upper }}
+- **Fonte:** {{ report.classification_source }}
+
+## Controlos
+
+- **Total:** {{ report.total_controls }}
+- **Confirmados:** {{ report.confirmed_controls | length }}
+- **Por validar:** {{ report.pending_controls | length }} ({{ report.pending_pct }}%)
+
+{% if report.pending_controls %}
+### Controlos por validar
+
+| ID | Título | Base legal citada |
+|---|---|---|
+{% for c in report.pending_controls -%}
+| {{ c.id }} | {{ c.title }} | {{ c.crosswalk.nis2_article | join(", ") }} |
+{% endfor %}
+{% endif %}
+
+{% if report.confirmed_controls %}
+### Controlos confirmados
+
+| ID | Título | Fonte |
+|---|---|---|
+{% for c in report.confirmed_controls -%}
+| {{ c.id }} | {{ c.title }} | {{ c.fonte }} |
+{% endfor %}
+{% endif %}
+
+---
+*Estado global: {{ "totalmente validado" if report.fully_validated else "validação pendente — não usar isoladamente como base legal definitiva" }}.*

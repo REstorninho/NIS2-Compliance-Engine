@@ -36,6 +36,12 @@ SETORES_IMPORTANTES = {
     "investigacao",
 }
 
+# Estado de validação jurídica desta classificação setorial — usado por
+# `nis2 audit`. Passa a "confirmado" só depois de uma validação artigo-a-artigo
+# contra o texto oficial do DL 125/2025 publicado em Diário da República.
+CLASSIFICACAO_ESTADO_VALIDACAO = "por_validar"
+CLASSIFICACAO_FONTE = "CMS, Crowe, PWC (fontes secundárias) — sem confirmação direta no DRE"
+
 def classify_entity(entity: Entity) -> EntityType:
     """Determina o tipo de entidade nos termos do DL 125/2025.
 

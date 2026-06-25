@@ -38,6 +38,8 @@ def load_controls(controls_dir: Path | None = None) -> list[Control]:
                 description=raw.get("description", ""),
                 crosswalk=Crosswalk(**crosswalk_raw),
                 evidence_contract=raw.get("evidence_contract"),
+                estado_validacao=raw.get("estado_validacao", "por_validar"),
+                fonte=raw.get("fonte", ""),
             )
         )
 

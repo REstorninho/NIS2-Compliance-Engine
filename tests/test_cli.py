@@ -83,3 +83,11 @@ def test_cli_policies_writes_all_three_documents(tmp_path):
     assert (out_dir / "politica_seguranca_fornecedores.md").exists()
     assert (out_dir / "politica_continuidade_bcdr.md").exists()
     assert "Maria Silva" in (out_dir / "politica_resposta_incidentes.md").read_text(encoding="utf-8")
+
+
+def test_cli_audit_writes_report(tmp_path):
+    out = tmp_path / "audit.md"
+    assert main(["audit", "-o", str(out)]) == 0
+    assert out.exists()
+    content = out.read_text(encoding="utf-8")
+    assert "por validar" in content.lower() or "POR_VALIDAR" in content.upper()
