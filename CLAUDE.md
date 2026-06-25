@@ -21,13 +21,13 @@ Trata como fonte de verdade, por ordem de precedência:
 
 1. **Decreto-Lei n.º 125/2025, de 4 de dezembro** — Regime Jurídico da Cibersegurança (RJC).
 2. **Regulamento n.º 756/2026, de 22-06-2026** (CNCS) — regulamento de execução, incluindo:
-   - **Anexo I — QNRCS** (2.ª versão): 6 objetivos (Gerir, Identificar, Proteger, Detetar, Responder, Recuperar), respetivas categorias e controlos (ex.: `GR.CO-1`, `ID.GA-1`, `PR.GA-1`, `DE.MC-1`, `RS.GI-1`, `RC.PR-1`).
+   - **Anexo I — QNRCS** (2.ª versão): 6 objetivos (Gerir/Governar, Identificar, Proteger, Detetar, Responder, Recuperar), respetivas categorias e controlos. No corpus deste repositório (`data/controls/`) cada controlo usa um identificador canónico no formato `<PREFIXO>-<NN>` (maiúsculas, número de 2 dígitos), em que o prefixo mapeia o objetivo QNRCS: `GOV-` (Governar), `IDN-` (Identificar), `PRT-` (Proteger), `DET-` (Detetar), `RSP-` (Responder), `REC-` (Recuperar). Exemplos reais: `GOV-01`, `IDN-02`, `PRT-03`, `DET-01`, `RSP-01`, `REC-01`.
    - **Anexo II — Matriz de Risco**: fórmula `valor de risco = Probabilidade × Impacto × (Dimensão/3) × Tipo de setor`; níveis de conformidade Básico (0–99), Substancial (100–199), Elevado (200–1200).
    - **Anexo III — Medidas mínimas para entidades essenciais e importantes**, organizadas por nível (Básico → Substancial → Elevado), cada uma com *Controlo · Medida · Critério de Verificação*.
    - **Anexo IV — Medidas mínimas para entidades públicas relevantes**, Grupo B (base) e Grupo A (acresce ao B).
 3. Referenciais de suporte do QNRCS, **apenas como mapeamento cruzado**: NIST CSF 2.0, CyberFundamentals (CyFun) 2025, ISO/IEC 27001:2022, ISO/IEC 27002:2022, CIS Controls v8.1, NIST SP 800-53 Rev.5.
 
-Quando o utilizador descrever uma situação, **cita sempre o identificador do controlo e o artigo/anexo aplicável** (ex.: «medida do Anexo III, nível Substancial, controlo `PR.GA-3` — MFA em acessos remotos e contas privilegiadas»). Nunca inventes identificadores de controlo nem critérios de verificação que não constem dos anexos.
+Quando o utilizador descrever uma situação, **cita sempre o identificador do controlo e o artigo/anexo aplicável** (ex.: «medida do Anexo III, nível Substancial, controlo `PRT-01` — MFA em acessos remotos e contas privilegiadas»). Nunca inventes identificadores de controlo nem critérios de verificação que não constem dos anexos ou do corpus em `data/controls/`.
 
 ---
 
@@ -77,7 +77,7 @@ Quando o utilizador descrever uma situação, **cita sempre o identificador do c
 ## 6. Integração com o motor (`nis2_engine`)
 
 Quando gerares saída destinada a ser consumida pelo código do projeto:
-- Estrutura os controlos com os identificadores canónicos do Anexo I (`<OBJETIVO>.<CATEGORIA>-<n>`), para casar com `data/` (catálogo QNRCS) e o crosswalk.
+- Estrutura os controlos com os identificadores canónicos usados no repositório — formato `<PREFIXO>-<NN>` em maiúsculas (`GOV-01`, `IDN-02`, `PRT-03`, `DET-01`, `RSP-01`, `REC-01`), em que o prefixo de 3 letras mapeia o objetivo QNRCS (Governar/Identificar/Proteger/Detetar/Responder/Recuperar) — para casar com `data/controls/` (catálogo QNRCS) e o crosswalk. Não uses o formato `<OBJETIVO>.<CATEGORIA>-<n>` do texto do Anexo I em saídas destinadas ao código: o `loader.py` e o campo `Control.id` esperam o esquema do repositório.
 - Para cálculos da Matriz de Risco, devolve os fatores em campos separados (`probabilidade`, `impacto`, `dimensao`, `tipo_setor`, `valor_risco`, `nivel`) de modo a serem validados pelos `tests/`.
 - Para deliverables, segue os `templates/` existentes; não reinventes a estrutura de relatório se já houver template correspondente.
 
