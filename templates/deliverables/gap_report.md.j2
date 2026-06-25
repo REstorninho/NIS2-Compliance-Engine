@@ -3,6 +3,7 @@
 **Setor:** {{ result.entity.sector }}
 **Nível de conformidade exigido:** {{ result.target_level.value | capitalize }}
 **Score de conformidade:** {{ result.score_pct }}%
+**Maturidade média:** {{ result.maturity_score_pct }}%
 
 ## Resumo executivo
 
@@ -12,12 +13,21 @@ matriz de risco do Regulamento n.º 756/2026. Dos controlos aplicáveis, foram
 identificados **{{ result.gaps | rejectattr("implemented") | list | length }}**
 gaps por remediar.
 
+## Maturidade por função QNRCS
+
+| Função | Maturidade média (0-5) |
+|---|---|
+{% for function, avg in result.maturity_by_function.items() -%}
+| {{ function }} | {{ avg }} |
+{% endfor %}
+
 ## Gaps por prioridade
 
 {% for gap in result.gaps if not gap.implemented %}
 ### [{{ gap.priority | upper }}] {{ gap.control.id }} — {{ gap.control.title }}
 
 - **Função QNRCS:** {{ gap.control.qnrcs_function }}
+- **Maturidade observada:** {{ gap.maturity }} — {{ maturity_labels[gap.maturity] }}
 - **Base legal:** {{ gap.control.crosswalk.nis2_article | join(", ") }}
 - **ISO 27001 (Anexo A):** {{ gap.control.crosswalk.iso27001_annex_a | join(", ") }}
 - **CIS Controls v8:** {{ gap.control.crosswalk.cis_controls_v8 | join(", ") }}
@@ -30,7 +40,7 @@ gaps por remediar.
 ## Controlos conformes
 
 {% for gap in result.gaps if gap.implemented %}
-- ✅ {{ gap.control.id }} — {{ gap.control.title }}
+- ✅ {{ gap.control.id }} — {{ gap.control.title }} (maturidade {{ gap.maturity }} — {{ maturity_labels[gap.maturity] }})
 {% endfor %}
 
 ## Controlos não aplicáveis ao nível-alvo

@@ -14,6 +14,7 @@ from nis2_engine import (
     build_statement_of_applicability,
     compute_deadlines,
     load_controls,
+    render_gap_report,
     run_assessment,
 )
 from nis2_engine.classification import classify_entity, required_compliance_level
@@ -53,7 +54,7 @@ def main() -> None:
     result = run_assessment(entity, target_level, controls, answers)
 
     _print_section("1. Gap Report")
-    print(ENV.get_template("gap_report.md.j2").render(result=result))
+    print(render_gap_report(result))
 
     _print_section("2. Statement of Applicability")
     soa = build_statement_of_applicability(result, controls)

@@ -38,12 +38,14 @@ def load_answers(path: Path) -> list[AssessmentAnswer]:
         answers_raw = raw.get("answers", [])
     answers: list[AssessmentAnswer] = []
     for item in answers_raw:
+        maturity_raw = item.get("maturity")
         answers.append(
             AssessmentAnswer(
                 control_id=item["control_id"],
                 implemented=bool(item.get("implemented", False)),
                 notes=item.get("notes", ""),
                 evidence_ref=item.get("evidence_ref"),
+                maturity=int(maturity_raw) if maturity_raw is not None else None,
             )
         )
     return answers
@@ -97,6 +99,7 @@ def cmd_scaffold(args: argparse.Namespace) -> int:
                 "title": c.title,
                 "qnrcs_function": c.qnrcs_function,
                 "implemented": False,
+                "maturity": 0,  # 0-5: 0=Inexistente, 1=Inicial, 2=Em desenvolvimento, 3=Definido, 4=Gerido, 5=Otimizado
                 "notes": "",
             }
             for c in required
@@ -133,7 +136,7 @@ def cmd_assess(args: argparse.Namespace) -> int:
     )
 
     print(f"Entidade:       {entity.name} ({entity_type.value}, nível {target_level.value})")
-    print(f"Conformidade:   {result.score_pct}%")
+    print(f"Conformidade:   {result.score_pct}% (maturidade média: {result.maturity_score_pct}%)")
     print(f"Gaps abertos:   {sum(1 for g in result.gaps if not g.implemented)}")
     print(f"Deliverables escritos em: {out_dir}/")
     return 0

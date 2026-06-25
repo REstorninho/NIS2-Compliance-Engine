@@ -59,12 +59,34 @@ class Entity:
         return self.employees >= 50 or self.annual_turnover_eur > 10_000_000
 
 
+MATURITY_LABELS = {
+    0: "Inexistente",
+    1: "Inicial",
+    2: "Em desenvolvimento",
+    3: "Definido",
+    4: "Gerido",
+    5: "Otimizado",
+}
+
+# Maturidade mínima ("Definido") a partir da qual um controlo é considerado
+# implementado para efeitos binários (SoA, templates legados).
+MATURITY_IMPLEMENTED_THRESHOLD = 3
+
+
 @dataclass
 class AssessmentAnswer:
     control_id: str
     implemented: bool
     notes: str = ""
     evidence_ref: str | None = None
+    # Escala de maturidade graduada 0-5 (ver MATURITY_LABELS). Se None, deriva-se
+    # de `implemented` (5 se True, 0 se False) — compatibilidade com dados antigos.
+    maturity: int | None = None
+
+    def effective_maturity(self) -> int:
+        if self.maturity is not None:
+            return max(0, min(5, self.maturity))
+        return 5 if self.implemented else 0
 
 
 @dataclass
@@ -72,6 +94,7 @@ class GapItem:
     control: Control
     implemented: bool
     priority: str  # "alta", "media", "baixa" — derivado da função QNRCS
+    maturity: int = 0  # maturidade observada (0-5)
 
 
 @dataclass
@@ -81,6 +104,10 @@ class AssessmentResult:
     score_pct: float
     gaps: list[GapItem]
     not_applicable: list[Control]
+    # Score contínuo (média de maturidade/5 * 100) e média de maturidade por
+    # função QNRCS — dados de suporte a um futuro gráfico radar.
+    maturity_score_pct: float = 0.0
+    maturity_by_function: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass

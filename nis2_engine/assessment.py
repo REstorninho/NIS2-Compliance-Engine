@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .models import (
+    MATURITY_IMPLEMENTED_THRESHOLD,
     AssessmentAnswer,
     AssessmentResult,
     ComplianceLevel,
@@ -37,21 +38,38 @@ def run_assessment(
 
     gaps: list[GapItem] = []
     implemented_count = 0
+    maturity_sum = 0
+    maturity_by_function_sum: dict[str, int] = {}
+    maturity_by_function_count: dict[str, int] = {}
 
     for control in required:
         answer = answers_by_id.get(control.id)
-        implemented = bool(answer and answer.implemented)
+        maturity = answer.effective_maturity() if answer else 0
+        implemented = maturity >= MATURITY_IMPLEMENTED_THRESHOLD
         if implemented:
             implemented_count += 1
+        maturity_sum += maturity
+        maturity_by_function_sum[control.qnrcs_function] = (
+            maturity_by_function_sum.get(control.qnrcs_function, 0) + maturity
+        )
+        maturity_by_function_count[control.qnrcs_function] = (
+            maturity_by_function_count.get(control.qnrcs_function, 0) + 1
+        )
         gaps.append(
             GapItem(
                 control=control,
                 implemented=implemented,
                 priority=_PRIORITY_BY_FUNCTION.get(control.qnrcs_function, "media"),
+                maturity=maturity,
             )
         )
 
     score_pct = (implemented_count / len(required) * 100) if required else 0.0
+    maturity_score_pct = (maturity_sum / (len(required) * 5) * 100) if required else 0.0
+    maturity_by_function = {
+        function: round(maturity_by_function_sum[function] / maturity_by_function_count[function], 2)
+        for function in maturity_by_function_sum
+    }
 
     # Roadmap: gaps não implementados, ordenados por prioridade.
     priority_order = {"alta": 0, "media": 1, "baixa": 2}
@@ -63,4 +81,6 @@ def run_assessment(
         score_pct=round(score_pct, 1),
         gaps=gaps,
         not_applicable=not_applicable,
+        maturity_score_pct=round(maturity_score_pct, 1),
+        maturity_by_function=maturity_by_function,
     )

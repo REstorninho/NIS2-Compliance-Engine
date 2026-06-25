@@ -52,3 +52,36 @@ def test_basico_level_excludes_non_required_controls():
     assert all(not c.levels["basico"] for c in result.not_applicable)
     for gap in result.gaps:
         assert gap.control.required_at(target_level)
+
+
+def test_maturity_score_reflects_graduated_scale():
+    controls = load_controls()
+    entity = Entity(name="Operador Energético", sector="energia", employees=200, annual_turnover_eur=50_000_000)
+    target_level = ComplianceLevel.ELEVADO
+
+    required_ids = [c.id for c in controls if c.required_at(target_level)]
+    # Maturidade 2 ("Em desenvolvimento") não atinge o limiar de implementado.
+    answers = [AssessmentAnswer(control_id=cid, implemented=False, maturity=2) for cid in required_ids]
+
+    result = run_assessment(entity, target_level, controls, answers)
+
+    assert result.score_pct == 0.0
+    assert result.maturity_score_pct == 40.0  # 2/5 * 100
+    assert all(g.maturity == 2 for g in result.gaps)
+    assert all(not g.implemented for g in result.gaps)
+    assert set(result.maturity_by_function) == {c.qnrcs_function for c in controls if c.required_at(target_level)}
+
+
+def test_maturity_implemented_threshold_overrides_binary_flag():
+    controls = load_controls()
+    entity = Entity(name="Operador Energético", sector="energia", employees=200, annual_turnover_eur=50_000_000)
+    target_level = ComplianceLevel.ELEVADO
+
+    required_ids = [c.id for c in controls if c.required_at(target_level)]
+    # implemented=True mas maturity baixa: a maturidade graduada prevalece.
+    answers = [AssessmentAnswer(control_id=cid, implemented=True, maturity=1) for cid in required_ids]
+
+    result = run_assessment(entity, target_level, controls, answers)
+
+    assert all(not g.implemented for g in result.gaps)
+    assert all(g.maturity == 1 for g in result.gaps)
