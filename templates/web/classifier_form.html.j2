@@ -56,6 +56,10 @@
   .q-row .t { font-size: 13px; }
   .q-row .t small { color: var(--cinza); }
   .q-row select { padding: 6px; font-size: 13px; }
+  #risk-table input { width: 100%; padding: 5px 6px; font-size: 13px; border: 1px solid #cbd5e0; border-radius: 5px; }
+  #risk-table input.num { width: 64px; text-align: center; }
+  #risk-table td.valor { font-weight: 700; color: var(--azul); text-align: right; }
+  .btn-x { background: #fff5f5; color: var(--vermelho); border: none; border-radius: 5px; padding: 4px 8px; cursor: pointer; font-weight: 700; }
   footer { max-width: 1040px; margin: 0 auto 40px; padding: 0 16px; font-size: 12px; color: var(--cinza); }
   .aviso { background: #fffaf0; border: 1px solid #f6e05e; border-radius: 8px; padding: 12px; font-size: 12px; color: #744210; margin-top: 16px; }
 </style>
@@ -99,14 +103,32 @@
     <div class="motivo" id="motivo"></div>
   </section>
 
+  <section class="card full hidden" id="risk-card">
+    <h2>2 · Matriz de Risco (Anexo II)</h2>
+    <p class="hint" id="risk-intro"></p>
+    <table id="risk-table">
+      <thead>
+        <tr><th>Cenário</th><th>Ator / ameaça</th><th>Prob. (1-5)</th><th>Impacto (1-5)</th><th>Valor</th><th></th></tr>
+      </thead>
+      <tbody id="risk-rows"></tbody>
+    </table>
+    <div class="actions">
+      <button class="btn-ghost" id="btn-add-scenario">+ Adicionar cenário</button>
+    </div>
+    <div class="kpis" id="risk-kpis"></div>
+    <p class="hint">Fórmula: <code>valor = Probabilidade × Impacto × (Dimensão/3) × Tipo de setor</code>.
+      Limiares: Básico 0–99 · Substancial 100–199 · Elevado 200–1200.
+      Quando há cenários, o nível efetivo (agregação art. 30.º) é usado na autoavaliação abaixo.</p>
+  </section>
+
   <section class="card full" id="assess-card">
-    <h2>2 · Autoavaliação de maturidade</h2>
+    <h2>3 · Autoavaliação de maturidade</h2>
     <p class="hint" id="assess-intro"></p>
     <div id="questionnaire"></div>
   </section>
 
   <section class="card full hidden" id="results-card">
-    <h2>3 · Resultado da autoavaliação</h2>
+    <h2>4 · Resultado da autoavaliação</h2>
     <div class="kpis" id="kpis"></div>
     <h3>Maturidade média por função QNRCS</h3>
     <div id="by-function"></div>
@@ -175,6 +197,108 @@
   function round1(x) { return Math.round(x * 10) / 10; }
   function round2(x) { return Math.round(x * 100) / 100; }
   function fmtG(v) { return parseFloat(Number(v).toFixed(2)).toString(); } // imita Python {:g}
+
+  // --- Matriz de Risco (Anexo II): replica risk_matrix.py ---
+  var RISK = CFG.risk;
+  var riskScenarios = [{ name: "Ransomware", actor: "Cibercrime organizado", prob: 4, impacto: 5 }];
+
+  function classifyDimensao(entity) {
+    var b = RISK.dimensao_bands;
+    if (entity.employees >= b.grande_emp || entity.turnover > b.grande_turn) return "grande";
+    if (entity.employees >= b.media_emp || entity.turnover > b.media_turn) return "media";
+    return "pequena";
+  }
+  function classifyTipoSetor(entity) {
+    if (entity.is_public_body || CFG.essenciais.indexOf(entity.sector) >= 0) return "importancia_critica";
+    return "outros_criticos";
+  }
+  function classifyRiskLevel(total) {
+    if (total >= RISK.limiar_elevado) return "elevado";
+    if (total >= RISK.limiar_substancial) return "substancial";
+    return "basico";
+  }
+  function mostDemanding(a, b) {
+    var ord = RISK.level_order;
+    var arr = [a, b].filter(function (x) { return x; });
+    if (!arr.length) return "basico";
+    return arr.reduce(function (m, x) { return ord[x] > ord[m] ? x : m; });
+  }
+  function buildRiskMatrix(entity, scenarios, nivelReferencia) {
+    var dim = classifyDimensao(entity), tipo = classifyTipoSetor(entity);
+    var dimF = RISK.dimensao_fator[dim], tipoF = RISK.tipo_setor_fator[tipo];
+    var results = scenarios.map(function (s) {
+      return { s: s, valor: round2(s.prob * s.impacto * dimF * tipoF) };
+    });
+    var total = round2(results.reduce(function (acc, r) { return acc + r.valor; }, 0));
+    var nivelMatriz = classifyRiskLevel(total);
+    return {
+      dimensao: dim, dimensaoFator: dimF, tipoSetor: tipo, tipoSetorFator: tipoF,
+      results: results, total: total, nivelMatriz: nivelMatriz,
+      nivelReferencia: nivelReferencia || null,
+      nivelEfetivo: mostDemanding(nivelMatriz, nivelReferencia)
+    };
+  }
+  function effectiveLevelFor(entity) {
+    var nivel = LEVELS[classify(entity).tipo];
+    if (!nivel) return nivel;
+    if (riskScenarios.length > 0) return buildRiskMatrix(entity, riskScenarios, nivel).nivelEfetivo;
+    return nivel;
+  }
+  function updateRiskKpis(m) {
+    el("risk-kpis").innerHTML =
+      '<div class="kpi"><div class="v">' + m.total + '</div><div class="l">Valor de risco</div></div>' +
+      '<div class="kpi"><div class="v">' + m.nivelMatriz + '</div><div class="l">Nível pela matriz</div></div>' +
+      '<div class="kpi"><div class="v">' + (m.nivelReferencia || "—") + '</div><div class="l">Nível por tipo</div></div>' +
+      '<div class="kpi"><div class="v">' + m.nivelEfetivo + '</div><div class="l">Nível efetivo (art. 30.º)</div></div>';
+  }
+  function recomputeRiskValues(entity, nivelRef) {
+    var m = buildRiskMatrix(entity, riskScenarios, nivelRef);
+    var trs = el("risk-rows").querySelectorAll("tr");
+    m.results.forEach(function (r, i) {
+      if (trs[i]) { var vc = trs[i].querySelector(".valor"); if (vc) vc.textContent = r.valor; }
+    });
+    updateRiskKpis(m);
+    renderQuestionnaire(m.nivelEfetivo);
+  }
+  function renderRiskMatrix(c) {
+    var card = el("risk-card");
+    if (!c.nivel) { card.classList.add("hidden"); return c.nivel; }
+    card.classList.remove("hidden");
+    var m = buildRiskMatrix(c.entity, riskScenarios, c.nivel);
+    el("risk-intro").innerHTML = "Dimensão: <strong>" + m.dimensao + "</strong> (fator " + fmtG(m.dimensaoFator) +
+      ") · Tipo de setor: <strong>" + m.tipoSetor.replace(/_/g, " ") + "</strong> (fator " + m.tipoSetorFator + ").";
+    var rows = "";
+    riskScenarios.forEach(function (s, i) {
+      var valor = m.results[i] ? m.results[i].valor : 0;
+      rows += '<tr>' +
+        '<td><input data-i="' + i + '" data-k="name" value="' + escapeHtml(s.name) + '"></td>' +
+        '<td><input data-i="' + i + '" data-k="actor" value="' + escapeHtml(s.actor || "") + '"></td>' +
+        '<td><input type="number" min="1" max="5" class="num" data-i="' + i + '" data-k="prob" value="' + s.prob + '"></td>' +
+        '<td><input type="number" min="1" max="5" class="num" data-i="' + i + '" data-k="impacto" value="' + s.impacto + '"></td>' +
+        '<td class="valor">' + valor + '</td>' +
+        '<td><button class="btn-x" data-del="' + i + '">✕</button></td></tr>';
+    });
+    el("risk-rows").innerHTML = rows;
+    el("risk-rows").querySelectorAll("input").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var i = parseInt(inp.getAttribute("data-i"), 10), k = inp.getAttribute("data-k");
+        if (k === "prob" || k === "impacto") {
+          riskScenarios[i][k] = Math.max(1, Math.min(5, parseInt(inp.value, 10) || 1));
+          recomputeRiskValues(c.entity, c.nivel); // não reconstrói a tabela → mantém o foco
+        } else {
+          riskScenarios[i][k] = inp.value;
+        }
+      });
+    });
+    el("risk-rows").querySelectorAll("button[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        riskScenarios.splice(parseInt(b.getAttribute("data-del"), 10), 1);
+        render();
+      });
+    });
+    updateRiskKpis(m);
+    return m.nivelEfetivo;
+  }
 
   // --- Radar SVG: replica render_maturity_radar_svg() do motor (charts.py) ---
   function radarSvg(byFn, size) {
@@ -428,7 +552,8 @@
 
   function render() {
     var c = renderClassification();
-    renderQuestionnaire(c.nivel);
+    var nivel = renderRiskMatrix(c);  // nível efetivo (matriz agregada com tipo)
+    renderQuestionnaire(nivel);
     return c;
   }
 
@@ -436,6 +561,11 @@
   ["name", "sector", "employees", "turnover", "is_public_body", "is_trust"].forEach(function (id) {
     el(id).addEventListener("input", render);
     el(id).addEventListener("change", render);
+  });
+
+  el("btn-add-scenario").addEventListener("click", function () {
+    riskScenarios.push({ name: "Novo cenário", actor: "", prob: 3, impacto: 3 });
+    render();
   });
 
   el("btn-save").addEventListener("click", function () {
@@ -457,7 +587,7 @@
 
   el("btn-answers").addEventListener("click", function () {
     var c = readForm();
-    var nivel = LEVELS[classify(c).tipo];
+    var nivel = effectiveLevelFor(c);
     var required = CFG.controls.filter(function (cc) { return nivel && cc.levels[nivel]; });
     var lines = ["entity: " + (c.name || "Entidade sem nome"), "target_level: " + nivel, "answers:"];
     required.forEach(function (cc) {
@@ -475,7 +605,7 @@
   el("btn-report").addEventListener("click", function () {
     var c = readForm();
     var cl = classify(c);
-    var nivel = LEVELS[cl.tipo];
+    var nivel = effectiveLevelFor(c);
     if (!nivel) { alert("Entidade fora de âmbito — não há relatório de conformidade a gerar."); return; }
     var html = buildReportHtml(c, nivel, META[cl.tipo].rotulo);
     download(slugify(c.name) + "_relatorio.html", html, "text/html;charset=utf-8");

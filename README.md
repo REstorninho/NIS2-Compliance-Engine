@@ -32,6 +32,16 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
   - `classification.py` — motor de âmbito: essencial / importante / entidade
     pública relevante, regra de dimensão, exceções setoriais → nível de risco
     exigido.
+  - `risk_matrix.py` — Matriz de Risco do Anexo II: `valor = Probabilidade ×
+    Impacto × (Dimensão/3) × Tipo de setor` por cenário, soma, mapeamento para
+    Básico/Substancial/Elevado (0–99 / 100–199 / 200–1200) e regra de
+    agregação do art. 30.º (nível efetivo = mais exigente entre matriz e tipo
+    de entidade). Deriva dimensão (G/M/P) e tipo de setor (Importância Crítica
+    / Outros) da entidade.
+  - `deadlines.py` — calendário de obrigações da entidade a partir da data de
+    qualificação/notificação (lista de ativos art. 32.º, relatório anual,
+    designação de responsável/ponto de contacto), com estado de cada prazo
+    (vencido / a vencer / futuro).
   - `assessment.py` — motor de maturidade graduada (escala 0-5): cruza
     respostas com os controlos exigidos para o nível do cliente, calcula
     gap-analysis, score de conformidade e maturidade média por função QNRCS.
@@ -46,22 +56,30 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
     colunas em branco para um revisor confirmar artigo-a-artigo contra o DRE.
   - `history.py` — snapshots serializáveis de cada `AssessmentResult` (score,
     maturidade por função, estado de cada controlo), gravados em disco com
-    timestamp; permite listar (`nis2 history`) e comparar a evolução de uma
-    entidade entre dois assessments (`nis2 progress`).
+    timestamp; permite listar (`nis2 history`), comparar a evolução de uma
+    entidade entre dois assessments (`nis2 progress`) e construir a vista
+    agregada da carteira de clientes (`nis2 portfolio`).
+  - `incident.py` — prazos do regime de notificação (24h/72h/1 mês) e a
+    triagem de impacto significativo (Reg. UE 2024/2690, art. 3.º): veredicto
+    fundamentado, gatilho de alerta precoce e acionamento do RGPD/CNPD.
   - `charts.py` — gráfico radar (teia) de maturidade por função QNRCS em SVG
     puro, sem dependências externas, pronto a embeber em HTML/markdown.
 - `templates/web/` — formulário HTML self-contained (`nis2 form`) para correr
   todo o fluxo no browser, sem servidor: (1) **classificação de âmbito** em
-  tempo real (replica `classify_entity`); (2) **autoavaliação de maturidade**
-  — o questionário dos controlos exigidos para o nível resultante, com cálculo
-  ao vivo de score, maturidade por função e roadmap de gaps por fase (replica
-  `run_assessment` + `build_remediation_roadmap`); (3) **relatório HTML**
+  tempo real (replica `classify_entity`); (2) **Matriz de Risco** (Anexo II) —
+  enumeração de cenários (ator/probabilidade/impacto) com cálculo ao vivo do
+  valor de risco e do nível efetivo, que passa a alimentar a autoavaliação
+  (replica `risk_matrix.py`); (3) **autoavaliação de maturidade** — o
+  questionário dos controlos exigidos para o nível resultante, com cálculo ao
+  vivo de score, maturidade por função e roadmap de gaps por fase (replica
+  `run_assessment` + `build_remediation_roadmap`); (4) **relatório HTML**
   self-contained, gerado no browser com o radar de maturidade embebido
-  (replica `render_maturity_radar_svg` + `report.html`); (4) **histórico**
-  local (localStorage). As listas de setores, a regra de dimensão e o corpus
-  de controlos são injetados da fonte de verdade Python (paridade verificada
-  com Playwright, incluindo o polígono do radar), pelo que o formulário nunca
-  diverge do motor. Exporta o perfil e as respostas em YAML para alimentar a
+  (replica `render_maturity_radar_svg` + `report.html`); (5) **histórico**
+  local (localStorage). As listas de setores, a regra de dimensão, o corpus de
+  controlos e os fatores/limiares da matriz de risco são injetados da fonte de
+  verdade Python (paridade verificada com Playwright, incluindo o polígono do
+  radar e o nível efetivo da matriz), pelo que o formulário nunca diverge do
+  motor. Exporta o perfil e as respostas em YAML para alimentar a
   CLI (`classify`/`scaffold`/`assess`), o relatório em HTML e o histórico em
   CSV.
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
@@ -69,13 +87,25 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
   de remediação faseado, Statement of Applicability, plano de recolha de
   evidência (deriva do `evidence_contract` de cada controlo), relatório de
   auditoria jurídica, relatório de evolução entre assessments, relatório HTML
-  imprimível (radar embebido + marca do consultor), e o alerta inicial (24h)
-  / relatório detalhado (72h) do regime de notificação de incidentes ao CNCS
-  via MyCiber.
+  imprimível (radar embebido + marca do consultor), o alerta inicial (24h) /
+  relatório detalhado (72h) do regime de notificação de incidentes ao CNCS via
+  MyCiber, a **triagem de impacto significativo** do incidente, a **Matriz de
+  Risco** (Anexo II), o **calendário de obrigações**, a **carteira de
+  clientes**, e o **crosswalk dual NIS2 ↔ ISO/IEC 27001/27002:2022** +
+  checklist de documentos obrigatórios do SGSI (ver secção seguinte).
+- `nis2_engine/iso27001.py` — reagrupa o mesmo `AssessmentResult` (sem
+  reavaliar nada) pela ótica da ISO/IEC 27001/27002:2022: cobertura por tema
+  (Organizacionais/Pessoas/Físicos/Tecnológicos, derivado do prefixo do Anexo
+  A já citado no crosswalk de cada controlo) e por medida mínima do Art. 21.º,
+  n.º 2 da NIS2 (a-j, com o catálogo ISO 27002 de referência por medida).
+  Inclui também a lista dos 11 documentos mínimos exigidos por um SGSI
+  certificável (`ISO27001_MANDATORY_DOCUMENTS`). Pensado para o consultor que
+  oferece certificação ISO 27001 como caminho de maturidade adicional sobre o
+  trabalho de conformidade NIS2 já feito com o cliente.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (75 testes).
+- `tests/` — testes do motor (104 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -116,13 +146,16 @@ Python. `nis2 --version` mostra a versão instalada.
 | `nis2 form` | Gera o formulário HTML que corre classificação + autoavaliação de maturidade + roadmap no browser (com histórico local). |
 | `nis2 list-controls` | Lista o catálogo de controlos QNRCS (filtrável por `--level`/`--function`). |
 | `nis2 classify` | Classifica a entidade e gera o relatório de autoidentificação MyCiber. |
+| `nis2 risk` | Aplica a Matriz de Risco (Anexo II) a cenários e determina o nível exigido (matriz + agregação art. 30.º). |
 | `nis2 scaffold` | Gera o questionário de maturidade em branco para o nível-alvo. |
-| `nis2 assess` | Corre o assessment e gera todos os deliverables (gap report, roadmap, SoA, evidência, radar, HTML). |
+| `nis2 assess` | Corre o assessment e gera todos os deliverables (gap report, roadmap, SoA, evidência, radar, HTML, crosswalk ISO 27001). `--risk` deriva o nível da matriz. |
 | `nis2 policies` | Gera o pacote de políticas chave (resposta a incidentes, fornecedores, BC/DR). |
 | `nis2 audit` | Relatório de rastreabilidade jurídica + checklist de validação manual (`--checklist`). |
 | `nis2 history` | Lista os snapshots de assessment gravados para uma entidade. |
 | `nis2 progress` | Compara os dois assessments mais recentes e gera o relatório de evolução. |
-| `nis2 incident` | Gera o alerta inicial (24h) e o relatório detalhado (72h) de notificação ao CNCS. |
+| `nis2 portfolio` | Vista agregada da carteira de clientes (nível, score, maturidade, tendência por entidade). |
+| `nis2 deadlines` | Calendário de obrigações da entidade (lista de ativos art. 32.º, relatório anual, designação). |
+| `nis2 incident` | Triagem de impacto significativo + alerta inicial (24h) e relatório detalhado (72h) ao CNCS. |
 
 ```bash
 # 0a. Gerar um formulário HTML que corre TODO o fluxo no browser, sem editar
@@ -138,12 +171,18 @@ nis2 list-controls --level substancial
 # 1. Classificar a entidade e gerar o relatório de autoidentificação MyCiber
 nis2 classify examples/entity_camara.yaml -o out/self_identification.md
 
+# 1b. Aplicar a Matriz de Risco (Anexo II) a cenários de risco e apurar o nível
+#     exigido (matriz + agregação do art. 30.º contra o tipo de entidade)
+nis2 risk examples/entity_camara.yaml examples/scenarios_camara.yaml -o out/risk_matrix.md
+
 # 2. Gerar um questionário de maturidade em branco para preencher
 nis2 scaffold examples/entity_camara.yaml -o answers.yaml
 
 # 3. Correr o assessment e gerar todos os deliverables (gap report, roadmap,
-#    SoA, autoidentificação, plano de recolha de evidência, radar SVG e
-#    relatório HTML imprimível com a marca do consultor)
+#    SoA, autoidentificação, plano de recolha de evidência, radar SVG,
+#    relatório HTML imprimível com a marca do consultor, e o crosswalk dual
+#    NIS2 ↔ ISO/IEC 27001/27002:2022 + checklist de documentos do SGSI).
+#    Opcional: --risk <cenarios.yaml> deriva o nível da Matriz de Risco.
 nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/ --brand "Acme CyberSec"
 
 # 4. Gerar o pacote de políticas chave (evidência documental) para a entidade
@@ -160,9 +199,17 @@ nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/ --h
 nis2 history "Câmara Municipal de Exemplo" --history-dir out/.history
 nis2 progress "Câmara Municipal de Exemplo" --history-dir out/.history -o out/relatorio_evolucao.md
 
-# 7. Gerar o alerta inicial (24h) e o relatório detalhado (72h) de um
-#    incidente para notificação ao CNCS via MyCiber (Art. 23 DL 125/2025)
+# 6b. Vista agregada da carteira de clientes (todos os snapshots gravados)
+nis2 portfolio --history-dir out/.history -o out/carteira.md
+
+# 7. Gerar a triagem de impacto significativo + o alerta inicial (24h) e o
+#    relatório detalhado (72h) de um incidente para notificação ao CNCS via
+#    MyCiber (Art. 23 DL 125/2025)
 nis2 incident examples/entity_camara.yaml examples/incident_camara.yaml -o out/incidente
+
+# 8. Gerar o calendário de obrigações da entidade a partir da data de
+#    qualificação/notificação (lista de ativos art. 32.º, relatório anual, ...)
+nis2 deadlines examples/entity_camara.yaml --since 2026-03-01 -o out/calendario.md
 ```
 
 > O relatório HTML (`out/report.html`) é self-contained e imprimível para PDF

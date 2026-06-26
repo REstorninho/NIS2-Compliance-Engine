@@ -63,6 +63,22 @@ def test_form_includes_maturity_questionnaire_and_results():
     assert len(config["controls"]) >= 30
 
 
+def test_form_includes_risk_matrix_config_and_logic():
+    from nis2_engine.risk_matrix import DIMENSAO_FATOR, LIMIAR_ELEVADO, TIPO_SETOR_FATOR
+
+    html = render_classifier_form()
+    assert 'id="risk-card"' in html
+    assert "function buildRiskMatrix" in html
+    assert 'id="btn-add-scenario"' in html
+    match = re.search(r'<script id="nis2-config" type="application/json">(.*?)</script>', html, re.S)
+    config = json.loads(match.group(1))
+    risk = config["risk"]
+    assert risk["dimensao_fator"] == DIMENSAO_FATOR
+    assert risk["tipo_setor_fator"] == TIPO_SETOR_FATOR
+    assert risk["limiar_elevado"] == LIMIAR_ELEVADO
+    assert risk["level_order"] == {"basico": 0, "substancial": 1, "elevado": 2}
+
+
 def test_form_includes_report_export_and_radar_data():
     html = render_classifier_form(brand="Acme")
     # Botão e construtor do relatório HTML no browser.

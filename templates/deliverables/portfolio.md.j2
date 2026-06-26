@@ -1,0 +1,16 @@
+# Carteira de Clientes — Estado de Conformidade NIS2
+
+**Gerado em:** {{ generated_at }}
+**Entidades:** {{ entries | length }}
+
+| Entidade | Setor | Nível-alvo | Score | Maturidade | Tend. | Assessments | Último |
+|---|---|---|---:|---:|:---:|---:|---|
+{% for e in entries -%}
+| {{ e.entity_name }} | {{ e.sector }} | {{ e.target_level | capitalize }} | {{ e.score_pct }}% | {{ e.maturity_score_pct }}% | {{ e.trend }} | {{ e.assessments_count }} | {{ e.latest_date[:10] }} |
+{% endfor %}
+
+---
+
+*Vista agregada construída a partir dos snapshots de `nis2 assess --history-dir`.
+Ordenada por score ascendente (os clientes com maior lacuna primeiro).
+Tendência (↑/↓/→) face ao assessment imediatamente anterior de cada entidade.*

@@ -16,14 +16,39 @@ from .loader import load_controls
 from .classification import classify_entity
 from .assessment import run_assessment
 from .soa import build_statement_of_applicability
-from .incident import compute_deadlines, NotificationDeadlines
+from .incident import (
+    compute_deadlines,
+    NotificationDeadlines,
+    SignificanceCriteria,
+    SignificanceVerdict,
+    assess_significance,
+)
+from .risk_matrix import (
+    RiskScenario,
+    RiskScenarioResult,
+    RiskMatrixResult,
+    build_risk_matrix,
+    classify_dimensao,
+    classify_tipo_setor,
+    classify_risk_level,
+    most_demanding,
+)
+from .deadlines import Obligation, build_obligations_calendar
 from .classification import required_compliance_level
 from .roadmap import build_remediation_roadmap, RemediationRoadmap, RoadmapPhase
 from .audit import build_audit_report, build_validation_checklist, AuditReport, VALIDATION_CHECKLIST_FIELDS
+from .iso27001 import (
+    ART21_MEASURES,
+    ISO27001_MANDATORY_DOCUMENTS,
+    ISO27001Crosswalk,
+    build_iso27001_crosswalk,
+)
 from .history import (
     AssessmentSnapshot,
     ProgressDelta,
+    PortfolioEntry,
     build_snapshot,
+    build_portfolio,
     compare_snapshots,
     load_snapshots,
     save_snapshot,
@@ -46,6 +71,12 @@ from .reporting import (
     render_validation_checklist_csv,
     render_classifier_form,
     build_classifier_config,
+    render_iso27001_crosswalk,
+    render_iso27001_document_checklist,
+    render_risk_matrix,
+    render_significance_triage,
+    render_deadlines,
+    render_portfolio,
 )
 from .charts import render_maturity_radar_svg
 
@@ -63,6 +94,21 @@ __all__ = [
     "SoAEntry",
     "StatementOfApplicability",
     "NotificationDeadlines",
+    "SignificanceCriteria",
+    "SignificanceVerdict",
+    "assess_significance",
+    "RiskScenario",
+    "RiskScenarioResult",
+    "RiskMatrixResult",
+    "build_risk_matrix",
+    "classify_dimensao",
+    "classify_tipo_setor",
+    "classify_risk_level",
+    "most_demanding",
+    "Obligation",
+    "build_obligations_calendar",
+    "PortfolioEntry",
+    "build_portfolio",
     "load_controls",
     "classify_entity",
     "required_compliance_level",
@@ -75,6 +121,10 @@ __all__ = [
     "build_validation_checklist",
     "AuditReport",
     "VALIDATION_CHECKLIST_FIELDS",
+    "ART21_MEASURES",
+    "ISO27001_MANDATORY_DOCUMENTS",
+    "ISO27001Crosswalk",
+    "build_iso27001_crosswalk",
     "AssessmentSnapshot",
     "ProgressDelta",
     "build_snapshot",
@@ -99,5 +149,11 @@ __all__ = [
     "render_validation_checklist_csv",
     "render_classifier_form",
     "build_classifier_config",
+    "render_iso27001_crosswalk",
+    "render_iso27001_document_checklist",
+    "render_risk_matrix",
+    "render_significance_triage",
+    "render_deadlines",
+    "render_portfolio",
     "render_maturity_radar_svg",
 ]

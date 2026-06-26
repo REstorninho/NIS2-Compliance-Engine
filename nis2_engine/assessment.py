@@ -12,7 +12,7 @@ from .models import (
 
 # Prioridade de remediação por função QNRCS — Responder/Recuperar e Proteger
 # pesam mais porque a sua ausência tem maior impacto direto em incidentes.
-_PRIORITY_BY_FUNCTION = {
+PRIORITY_BY_FUNCTION = {
     "Responder": "alta",
     "Recuperar": "alta",
     "Proteger": "alta",
@@ -20,6 +20,8 @@ _PRIORITY_BY_FUNCTION = {
     "Identificar": "media",
     "Governar": "baixa",
 }
+# Alias retrocompatível (nome privado anterior).
+_PRIORITY_BY_FUNCTION = PRIORITY_BY_FUNCTION
 
 
 def run_assessment(
@@ -59,7 +61,7 @@ def run_assessment(
             GapItem(
                 control=control,
                 implemented=implemented,
-                priority=_PRIORITY_BY_FUNCTION.get(control.qnrcs_function, "media"),
+                priority=PRIORITY_BY_FUNCTION.get(control.qnrcs_function, "media"),
                 maturity=maturity,
             )
         )

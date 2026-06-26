@@ -1,6 +1,12 @@
 from datetime import datetime, timedelta
 
-from nis2_engine import Entity, IncidentNotification, compute_deadlines
+from nis2_engine import (
+    Entity,
+    IncidentNotification,
+    SignificanceCriteria,
+    assess_significance,
+    compute_deadlines,
+)
 
 
 def _make_incident(detected_at: datetime) -> IncidentNotification:
@@ -41,3 +47,28 @@ def test_time_remaining_is_negative_after_deadline_passed():
     deadlines = compute_deadlines(incident)
     now = datetime(2026, 6, 24, 10, 0)
     assert deadlines.time_remaining("alerta_inicial", now) < timedelta(0)
+
+
+def test_significance_general_criteria_a_triggers():
+    verdict = assess_significance(SignificanceCriteria(perturbacao_operacional_grave=True))
+    assert verdict.significativo is True
+    assert any("(a)" in c for c in verdict.criterios_acionados)
+
+
+def test_significance_criteria_b_third_parties_triggers():
+    verdict = assess_significance(SignificanceCriteria(afeta_outras_entidades=True))
+    assert verdict.significativo is True
+    assert any("(b)" in c for c in verdict.criterios_acionados)
+
+
+def test_significance_not_triggered_without_general_criteria():
+    verdict = assess_significance(SignificanceCriteria(utilizadores_afetados=10))
+    assert verdict.significativo is False
+
+
+def test_early_warning_and_rgpd_flags():
+    verdict = assess_significance(
+        SignificanceCriteria(suspeita_ato_ilicito=True), dados_pessoais_envolvidos=True
+    )
+    assert verdict.obriga_alerta_precoce is True
+    assert verdict.aciona_rgpd is True

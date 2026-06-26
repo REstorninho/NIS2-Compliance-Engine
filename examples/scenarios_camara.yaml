@@ -1,0 +1,29 @@
+# Cenários de risco para a Matriz de Risco (Anexo II) — exemplo câmara municipal.
+# valor = Probabilidade × Impacto × (Dimensão/3) × Tipo de setor.
+# Probabilidade e impacto na escala 1-5.
+scenarios:
+  - name: Ransomware em sistemas administrativos
+    threat_actor: Cibercrime organizado
+    probabilidade: 4
+    impacto: 5
+    description: Cifragem de servidores de gestão documental e munícipes.
+  - name: Phishing com comprometimento de credenciais
+    threat_actor: Cibercrime / oportunista
+    probabilidade: 5
+    impacto: 3
+    description: Acesso indevido a contas de correio e aplicações internas.
+  - name: Indisponibilidade de serviços online ao munícipe
+    threat_actor: DDoS / falha
+    probabilidade: 3
+    impacto: 4
+    description: Interrupção do portal e serviços eletrónicos.
+  - name: Exfiltração de dados pessoais de munícipes
+    threat_actor: Insider / externo
+    probabilidade: 3
+    impacto: 5
+    description: Fuga de dados pessoais (aciona também RGPD).
+  - name: Falha de fornecedor TIC crítico
+    threat_actor: Cadeia de abastecimento
+    probabilidade: 3
+    impacto: 4
+    description: Comprometimento via prestador de serviços geridos.

@@ -60,6 +60,8 @@ def test_cli_scaffold_then_assess(tmp_path):
     html = report_html.read_text(encoding="utf-8")
     assert "<svg" in html
     assert "Acme" in html
+    assert (out_dir / "iso27001_crosswalk.md").exists()
+    assert (out_dir / "iso27001_document_checklist.md").exists()
 
 
 def test_cli_assess_out_of_scope_returns_error(tmp_path):
@@ -276,3 +278,79 @@ def test_cli_version_flag(capsys):
     assert raised
     captured = capsys.readouterr()
     assert "nis2" in captured.out
+
+
+def _energia(tmp_path):
+    return _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+
+
+def test_cli_risk_computes_level_and_writes_report(tmp_path):
+    entity = _energia(tmp_path)
+    scenarios = _write(
+        tmp_path / "scenarios.yaml",
+        {"scenarios": [
+            {"name": "Ransomware", "probabilidade": 4, "impacto": 5},
+            {"name": "Phishing", "probabilidade": 5, "impacto": 3},
+        ]},
+    )
+    out = tmp_path / "risk.md"
+    assert main(["risk", str(entity), str(scenarios), "-o", str(out)]) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "Matriz de Risco" in text
+    assert "Nível efetivo" in text
+
+
+def test_cli_deadlines_writes_calendar(tmp_path):
+    entity = _energia(tmp_path)
+    out = tmp_path / "deadlines.md"
+    assert main(["deadlines", str(entity), "--since", "2026-03-01", "-o", str(out)]) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "Calendário de Obrigações" in text
+    assert "Art. 32" in text
+
+
+def test_cli_assess_with_risk_writes_matrix(tmp_path):
+    entity = _energia(tmp_path)
+    scaffold = tmp_path / "answers.yaml"
+    assert main(["scaffold", str(entity), "-o", str(scaffold)]) == 0
+    scenarios = _write(
+        tmp_path / "scenarios.yaml",
+        {"scenarios": [{"name": "c", "probabilidade": 5, "impacto": 5}]},
+    )
+    out_dir = tmp_path / "out"
+    assert main(["assess", str(entity), str(scaffold), "-o", str(out_dir), "--risk", str(scenarios)]) == 0
+    assert (out_dir / "risk_matrix.md").exists()
+
+
+def test_cli_incident_writes_significance_triage(tmp_path):
+    entity = _energia(tmp_path)
+    incident = _write(
+        tmp_path / "incident.yaml",
+        {
+            "incident_id": "INC-1",
+            "detected_at": "2026-06-24T09:00:00",
+            "severity": "alto",
+            "description": "Acesso indevido.",
+            "dados_pessoais_envolvidos": True,
+            "significance": {"afeta_outras_entidades": True, "suspeita_ato_ilicito": True},
+        },
+    )
+    out_dir = tmp_path / "inc"
+    assert main(["incident", str(entity), str(incident), "-o", str(out_dir)]) == 0
+    triage = (out_dir / "triagem_significancia.md").read_text(encoding="utf-8")
+    assert "SIGNIFICATIVO" in triage
+    assert "CNPD" in triage
+
+
+def test_cli_portfolio_aggregates_history(tmp_path):
+    entity = _energia(tmp_path)
+    scaffold = tmp_path / "answers.yaml"
+    assert main(["scaffold", str(entity), "-o", str(scaffold)]) == 0
+    history_dir = tmp_path / "hist"
+    assert main(["assess", str(entity), str(scaffold), "-o", str(tmp_path / "out"), "--history-dir", str(history_dir)]) == 0
+    out = tmp_path / "portfolio.md"
+    assert main(["portfolio", "--history-dir", str(history_dir), "-o", str(out)]) == 0
+    assert "Carteira de Clientes" in out.read_text(encoding="utf-8")

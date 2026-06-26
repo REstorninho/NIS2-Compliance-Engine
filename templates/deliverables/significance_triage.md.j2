@@ -1,0 +1,39 @@
+# Triagem de Impacto Significativo — Incidente {{ incident.incident_id }}
+
+**Entidade:** {{ incident.entity.name }}
+**Detetado em:** {{ incident.detected_at.isoformat() }}
+**Severidade declarada:** {{ incident.severity }}
+
+## Veredicto
+
+{% if verdict.significativo -%}
+🔴 **SIGNIFICATIVO** — sujeito ao regime de notificação ao CNCS (Art. 23.º).
+{%- else -%}
+🟡 **NÃO determinado como significativo** com os dados disponíveis.
+{%- endif %}
+
+{{ verdict.fundamentacao }}
+
+## Critérios gerais acionados (Reg. UE 2024/2690, art. 3.º)
+
+{% if verdict.criterios_acionados -%}
+{% for criterio in verdict.criterios_acionados -%}
+- ✔ {{ criterio }}
+{% endfor %}
+{%- else -%}
+- Nenhum critério geral acionado.
+{%- endif %}
+
+## Implicações
+
+| Obrigação | Aplicável |
+|---|---|
+| Alerta precoce em 24h (suspeita de ato ilícito / impacto transfronteiriço) | {{ "Sim" if verdict.obriga_alerta_precoce else "Não" }} |
+| Notificação 72h + relatório final 1 mês | {{ "Sim" if verdict.significativo else "A reavaliar" }} |
+| Regime RGPD — notificação à CNPD (dados pessoais envolvidos) | {{ "Sim" if verdict.aciona_rgpd else "Não" }} |
+
+---
+
+*Triagem de apoio à decisão. Os limiares quantitativos setoriais do Reg. (UE)
+2024/2690 e a instrução técnica do CNCS devem ser confirmados caso a caso. Em
+caso de dúvida sobre a significância, o regime aconselha notificar.*

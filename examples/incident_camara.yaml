@@ -17,3 +17,15 @@ mitigation_actions:
   - Reposição de credenciais de administração
 cross_border_effect: false
 status: em_curso
+# Indica se há dados pessoais envolvidos (aciona o regime do RGPD / CNPD).
+dados_pessoais_envolvidos: true
+# Bloco opcional para a triagem de impacto significativo (Reg. UE 2024/2690).
+significance:
+  perturbacao_operacional_grave: false
+  afeta_outras_entidades: true
+  perdas_financeiras_eur: 0
+  utilizadores_afetados: 120
+  indisponibilidade_horas: 0
+  suspeita_ato_ilicito: true
+  impacto_transfronteirico: false
+  incidente_recorrente: false
