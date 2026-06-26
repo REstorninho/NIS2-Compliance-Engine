@@ -28,6 +28,12 @@ from .models import (
     IncidentNotification,
     StatementOfApplicability,
 )
+from .risk_matrix import (
+    DIMENSAO_FATOR,
+    LIMIAR_ELEVADO,
+    LIMIAR_SUBSTANCIAL,
+    TIPO_SETOR_FATOR,
+)
 from .roadmap import PHASES_BY_PRIORITY, PHASE_ORDER, RemediationRoadmap
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "deliverables"
@@ -134,6 +140,20 @@ def build_classifier_config() -> dict:
             {"priority": p, "name": PHASES_BY_PRIORITY[p][0], "timeframe": PHASES_BY_PRIORITY[p][1]}
             for p in sorted(PHASES_BY_PRIORITY, key=lambda p: PHASE_ORDER[p])
         ],
+        # Matriz de Risco (Anexo II) — fonte de verdade para o cálculo no browser.
+        "risk": {
+            "dimensao_fator": DIMENSAO_FATOR,
+            "tipo_setor_fator": TIPO_SETOR_FATOR,
+            "limiar_substancial": LIMIAR_SUBSTANCIAL,
+            "limiar_elevado": LIMIAR_ELEVADO,
+            "dimensao_bands": {
+                "grande_emp": 250,
+                "grande_turn": 50_000_000,
+                "media_emp": SIZE_THRESHOLD_EMPLOYEES,
+                "media_turn": SIZE_THRESHOLD_TURNOVER_EUR,
+            },
+            "level_order": {"basico": 0, "substancial": 1, "elevado": 2},
+        },
     }
 
 

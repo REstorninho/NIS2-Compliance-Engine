@@ -66,16 +66,20 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
     puro, sem dependências externas, pronto a embeber em HTML/markdown.
 - `templates/web/` — formulário HTML self-contained (`nis2 form`) para correr
   todo o fluxo no browser, sem servidor: (1) **classificação de âmbito** em
-  tempo real (replica `classify_entity`); (2) **autoavaliação de maturidade**
-  — o questionário dos controlos exigidos para o nível resultante, com cálculo
-  ao vivo de score, maturidade por função e roadmap de gaps por fase (replica
-  `run_assessment` + `build_remediation_roadmap`); (3) **relatório HTML**
+  tempo real (replica `classify_entity`); (2) **Matriz de Risco** (Anexo II) —
+  enumeração de cenários (ator/probabilidade/impacto) com cálculo ao vivo do
+  valor de risco e do nível efetivo, que passa a alimentar a autoavaliação
+  (replica `risk_matrix.py`); (3) **autoavaliação de maturidade** — o
+  questionário dos controlos exigidos para o nível resultante, com cálculo ao
+  vivo de score, maturidade por função e roadmap de gaps por fase (replica
+  `run_assessment` + `build_remediation_roadmap`); (4) **relatório HTML**
   self-contained, gerado no browser com o radar de maturidade embebido
-  (replica `render_maturity_radar_svg` + `report.html`); (4) **histórico**
-  local (localStorage). As listas de setores, a regra de dimensão e o corpus
-  de controlos são injetados da fonte de verdade Python (paridade verificada
-  com Playwright, incluindo o polígono do radar), pelo que o formulário nunca
-  diverge do motor. Exporta o perfil e as respostas em YAML para alimentar a
+  (replica `render_maturity_radar_svg` + `report.html`); (5) **histórico**
+  local (localStorage). As listas de setores, a regra de dimensão, o corpus de
+  controlos e os fatores/limiares da matriz de risco são injetados da fonte de
+  verdade Python (paridade verificada com Playwright, incluindo o polígono do
+  radar e o nível efetivo da matriz), pelo que o formulário nunca diverge do
+  motor. Exporta o perfil e as respostas em YAML para alimentar a
   CLI (`classify`/`scaffold`/`assess`), o relatório em HTML e o histórico em
   CSV.
 - `templates/deliverables/` — templates Jinja2 para gerar relatórios
