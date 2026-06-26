@@ -89,6 +89,7 @@ from .reporting import (
     render_portfolio,
 )
 from .charts import render_maturity_radar_svg
+from .webapp import GenerationResult, build_app_config, generate_deliverables, serve
 
 __all__ = [
     "Control",

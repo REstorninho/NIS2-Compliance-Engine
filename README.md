@@ -10,9 +10,11 @@ Cobre o ciclo de conformidade de ponta a ponta: **classificação de âmbito**
 faseado, **deliverables** prontos a entregar (gap report, Statement of
 Applicability, plano de recolha de evidência, relatório HTML imprimível,
 pacote de políticas), **notificação de incidentes** ao CNCS via MyCiber e
-**rastreabilidade jurídica** do corpus. Há duas portas de entrada: um
-formulário **HTML** que corre no browser (`nis2 form`) e uma **CLI** sobre
-ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
+**rastreabilidade jurídica** do corpus. Há três portas de entrada: uma **web
+app** local (`nis2 serve`) com introdução por formulário e exportação em
+Markdown/PDF, um formulário **HTML** self-contained que corre offline no
+browser (`nis2 form`), e uma **CLI** sobre ficheiros YAML — todas assentes no
+mesmo motor.
 
 ## Instalação
 
@@ -116,6 +118,12 @@ pytest
     página), pronto a "Imprimir → Guardar como PDF". Conversor de Markdown
     próprio (subconjunto dos templates), zero dependências novas; `--pdf`
     exporta PDF de forma oportunista (weasyprint ou Chromium, se disponíveis).
+  - `webapp.py` — **web app local** (`nis2 serve`) sobre `http.server` da
+    biblioteca padrão (zero dependências novas) e Jinja2. Introdução de dados
+    por formulário (com prefil por perfil setorial), escolha de deliverables e
+    exportação em Markdown (individual ou `.zip`) e PDF (dossier). O servidor
+    corre o **motor real** — `generate_deliverables()` é independente do HTTP e
+    testável; nada de duplicar lógica em JS.
 - `templates/web/` — formulário HTML self-contained (`nis2 form`) para correr
   todo o fluxo no browser, sem servidor: (1) **classificação de âmbito** em
   tempo real (replica `classify_entity`); (2) **Matriz de Risco** (Anexo II) —
@@ -159,7 +167,7 @@ pytest
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (122 testes).
+- `tests/` — testes do motor (126 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -197,7 +205,8 @@ devolvem uma mensagem clara em `stderr` e código de saída 1 — não um
 
 | Comando | O que faz |
 |---|---|
-| `nis2 form` | Gera o formulário HTML que corre classificação + autoavaliação de maturidade + roadmap no browser (com histórico local). |
+| `nis2 serve` | **Web app local**: introdução de dados por formulário, prefil por perfil setorial, escolha de deliverables e exportação em Markdown e PDF — corre o motor real no servidor. |
+| `nis2 form` | Gera o formulário HTML self-contained (offline) que corre classificação + autoavaliação de maturidade + roadmap no browser (com histórico local). |
 | `nis2 profiles` | Lista os perfis setoriais pré-preenchidos (autarquias, juntas de freguesia, hotelaria, turismo). |
 | `nis2 profile` | Materializa um perfil setorial em `entity.yaml` + `scenarios.yaml` prontos a usar, com a nota de âmbito do setor. |
 | `nis2 list-controls` | Lista o catálogo de controlos QNRCS (filtrável por `--level`/`--function`). |
@@ -215,10 +224,15 @@ devolvem uma mensagem clara em `stderr` e código de saída 1 — não um
 | `nis2 dossier` | Agrega os deliverables Markdown de uma pasta num dossier HTML com a marca do consultor (capa + índice + impressão); `--pdf` exporta PDF se houver motor disponível. |
 
 ```bash
-# 0a. Gerar um formulário HTML que corre TODO o fluxo no browser, sem editar
-#     YAML: classifica o âmbito, apresenta o questionário de maturidade do
-#     nível resultante e calcula score/roadmap ao vivo, com histórico local.
-#     Os botões "Descarregar perfil/respostas (YAML)" alimentam os comandos abaixo.
+# 0. (Mais fácil) Arrancar a WEB APP local: formulário para introduzir os dados,
+#    prefil por perfil setorial, escolha dos deliverables e exportação em
+#    Markdown e PDF — sem editar um único YAML. Corre o motor real no servidor.
+nis2 serve --brand "Acme CyberSec"            # abre http://127.0.0.1:8000/
+
+# 0a. Gerar um formulário HTML self-contained (offline, ficheiro único) que corre
+#     TODO o fluxo no browser sem servidor: classifica o âmbito, apresenta o
+#     questionário de maturidade e calcula score/roadmap ao vivo, com histórico
+#     local. Os botões "Descarregar perfil/respostas (YAML)" alimentam a CLI.
 nis2 form -o out/classificador.html --brand "Acme CyberSec"
 
 # 0b. Consultar o catálogo de controlos QNRCS antes de preencher o entity.yaml
