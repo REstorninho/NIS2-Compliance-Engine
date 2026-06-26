@@ -588,8 +588,41 @@ def cmd_audit(args: argparse.Namespace) -> int:
 def cmd_list_controls(args: argparse.Namespace) -> int:
     """Lista o catálogo de controlos QNRCS, com filtro opcional por nível
     exigido ou função — útil para consultar o que vai ser pedido antes de
-    preencher o `entity.yaml`/`answers.yaml`, sem ter de abrir `data/controls/`."""
+    preencher o `entity.yaml`/`answers.yaml`, sem ter de abrir `data/controls/`.
+    Com `control_id`, mostra o detalhe completo desse controlo."""
     controls = load_controls()
+
+    if args.control_id:
+        cid = args.control_id.strip().upper()
+        match = next((c for c in controls if c.id.upper() == cid), None)
+        if match is None:
+            disponiveis = ", ".join(sorted(c.id for c in controls))
+            print(f"Controlo '{args.control_id}' não encontrado. Disponíveis: {disponiveis}", file=sys.stderr)
+            return 1
+        niveis = ", ".join(
+            nome for nome, nivel in (("Básico", "basico"), ("Substancial", "substancial"), ("Elevado", "elevado"))
+            if match.levels.get(nivel)
+        )
+        print(f"{match.id} — {match.title}")
+        print(f"Função QNRCS: {match.qnrcs_function}")
+        print(f"Níveis exigidos: {niveis or '—'}")
+        print(f"Tipo de evidência: {match.evidence_type}")
+        print(f"Estado de validação jurídica: {match.estado_validacao}" + (f" ({match.fonte})" if match.fonte else ""))
+        if match.description:
+            print(f"\nDescrição:\n{match.description}")
+        cw = match.crosswalk
+        print("\nCrosswalk:")
+        for label, values in (
+            ("NIS2 (artigos)", cw.nis2_article),
+            ("Regulamento 756/2026", cw.regulamento_756_2026),
+            ("ISO/IEC 27001 Anexo A", cw.iso27001_annex_a),
+            ("CIS Controls v8", cw.cis_controls_v8),
+            ("RGPD", cw.rgpd),
+        ):
+            if values:
+                print(f"  {label}: {', '.join(values)}")
+        return 0
+
     if args.level:
         level = ComplianceLevel(args.level)
         controls = [c for c in controls if c.required_at(level)]
@@ -735,6 +768,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--level", choices=[l.value for l in ComplianceLevel], help="Filtrar pelos controlos exigidos a este nível."
     )
     p_list_controls.add_argument("--function", help="Filtrar pela função QNRCS (ex.: Governar, Proteger).")
+    p_list_controls.add_argument(
+        "control_id", nargs="?", help="ID de um controlo (ex.: DET-01) para mostrar o detalhe completo, em vez da lista."
+    )
     p_list_controls.set_defaults(func=cmd_list_controls)
 
     p_form = sub.add_parser(

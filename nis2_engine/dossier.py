@@ -231,11 +231,11 @@ def build_dossier_html(
 # Ordem e títulos canónicos dos deliverables Markdown conhecidos, para um
 # dossier coerente quando se agrega uma pasta inteira de outputs.
 _KNOWN_TITLES = {
-    "autoidentificacao.md": "Autoidentificação (MyCiber)",
+    "self_identification.md": "Autoidentificação (MyCiber)",
     "risk_matrix.md": "Matriz de Risco (Anexo II)",
     "gap_report.md": "Gap Analysis",
     "roadmap.md": "Roadmap de Remediação",
-    "soa.md": "Declaração de Aplicabilidade (SoA)",
+    "statement_of_applicability.md": "Declaração de Aplicabilidade (SoA)",
     "iso27001_crosswalk.md": "Crosswalk ISO/IEC 27001/27002",
     "iso27001_document_checklist.md": "Checklist de Documentos do SGSI",
     "evidence_plan.md": "Plano de Recolha de Evidência",

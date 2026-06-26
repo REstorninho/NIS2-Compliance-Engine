@@ -36,11 +36,11 @@ a.back{color:#fff;text-decoration:underline}
 <main>
 
 {% if error %}
-  <div class="card"><div class="err"><strong>Não foi possível gerar:</strong> {{ error }}</div></div>
+  <div class="card"><div class="err"><strong>Não foi possível gerar:</strong> {{ error|e }}</div></div>
 {% else %}
 
   <div class="card">
-    <h2>{{ result.entity_name }}</h2>
+    <h2>{{ result.entity_name|e }}</h2>
     <div class="kpis">
       <div class="kpi"><div class="l">Tipo de entidade</div><div class="v">{{ result.entity_type }}</div></div>
       <div class="kpi"><div class="l">Nível de referência</div><div class="v">{{ result.nivel_referencia }}</div></div>
@@ -52,7 +52,7 @@ a.back{color:#fff;text-decoration:underline}
       {% endif %}
     </div>
     {% for aviso in result.avisos %}
-      <div class="aviso">⚠️ {{ aviso }}</div>
+      <div class="aviso">⚠️ {{ aviso|e }}</div>
     {% endfor %}
   </div>
 
@@ -70,7 +70,7 @@ a.back{color:#fff;text-decoration:underline}
     <h2>Deliverables gerados ({{ result.files|length }})</h2>
     <ul class="files">
       {% for f in result.files %}
-      <li><span>{{ f }}</span><a class="btn secondary" href="/download/{{ sid }}/{{ f }}">⬇ Markdown</a></li>
+      <li><span>{{ f|e }}</span><a class="btn secondary" href="/download/{{ sid }}/{{ f|urlencode }}">⬇ Markdown</a></li>
       {% endfor %}
     </ul>
   </div>

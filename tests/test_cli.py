@@ -309,6 +309,20 @@ def test_cli_list_controls_filters_by_function(capsys):
     assert "Governar" in captured.out
 
 
+def test_cli_list_controls_shows_detail_for_control_id(capsys):
+    assert main(["list-controls", "GOV-01"]) == 0
+    captured = capsys.readouterr()
+    assert "GOV-01" in captured.out
+    assert "Crosswalk:" in captured.out
+
+
+def test_cli_list_controls_unknown_id_errors_with_available_list(capsys):
+    assert main(["list-controls", "XXX-99"]) == 1
+    captured = capsys.readouterr()
+    assert "não encontrado" in captured.err
+    assert "GOV-01" in captured.err
+
+
 def test_cli_missing_entity_file_returns_friendly_error(tmp_path, capsys):
     missing = tmp_path / "nao_existe.yaml"
     rc = main(["classify", str(missing)])

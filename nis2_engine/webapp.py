@@ -148,9 +148,10 @@ def generate_deliverables(form: dict, out_dir: Path, brand: str = "REGENTE") -> 
     else:
         target = ComplianceLevel.BASICO
 
-    selected = set(form.get("deliv", []))
-    if isinstance(selected, str):  # defensivo
-        selected = {selected}
+    deliv = form.get("deliv", [])
+    if isinstance(deliv, str):  # defensivo: aceita valor único
+        deliv = [deliv]
+    selected = set(deliv)
     include_assessment = bool(form.get("include_assessment")) and bool(selected & _ASSESSMENT_IDS)
 
     files: list[str] = []
