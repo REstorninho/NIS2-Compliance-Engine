@@ -14,6 +14,44 @@ pacote de políticas), **notificação de incidentes** ao CNCS via MyCiber e
 formulário **HTML** que corre no browser (`nis2 form`) e uma **CLI** sobre
 ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
 
+## Instalação
+
+Pacote Python puro (sem build nem compilação). Requer **Python ≥ 3.11** e
+`git`. As dependências (`pyyaml`, `jsonschema`, `jinja2`) são instaladas
+automaticamente.
+
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/REstorninho/NIS2-Compliance-Engine.git
+cd NIS2-Compliance-Engine
+
+# 2. (Recomendado) criar e ativar um ambiente virtual
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+# 3. Instalar o pacote em modo editável
+pip install -e .
+```
+
+Isto regista o comando **`nis2`** no PATH. Confirma com:
+
+```bash
+nis2 --version
+nis2 --help
+```
+
+**Para desenvolvimento** (acrescenta o `pytest` e corre a suite de testes):
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+> Notas: o `-e` (editável) faz com que alterações ao código fiquem ativas sem
+> reinstalar. Se o comando `nis2` não aparecer após o install, normalmente é o
+> ambiente virtual não estar ativado ou o diretório de *scripts* do Python não
+> estar no PATH — `nis2 --version` ajuda a despistar.
+
 ## Estrutura
 
 - `CLAUDE.md` — system prompt do copiloto **REGENTE**: identidade e papel,
@@ -139,10 +177,10 @@ linha com o texto oficial publicado.
 
 ## Utilização via CLI
 
-Depois de `pip install -e .`, fica disponível o comando `nis2`. Erros comuns
-(ficheiro em falta, campo obrigatório por preencher, YAML inválido) devolvem
-uma mensagem clara em `stderr` e código de saída 1 — não um *traceback*
-Python. `nis2 --version` mostra a versão instalada.
+Depois da [instalação](#instalação), fica disponível o comando `nis2`. Erros
+comuns (ficheiro em falta, campo obrigatório por preencher, YAML inválido)
+devolvem uma mensagem clara em `stderr` e código de saída 1 — não um
+*traceback* Python. `nis2 --version` mostra a versão instalada.
 
 | Comando | O que faz |
 |---|---|
