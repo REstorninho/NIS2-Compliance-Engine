@@ -1,0 +1,21 @@
+# Checklist de Documentos Obrigatórios — SGSI ISO/IEC 27001:2022
+
+**Entidade:** {{ entity.name }}
+**Gerado em:** {{ generated_at }}
+
+Lista mínima de informação documentada exigida para um SGSI auditável
+segundo a ISO/IEC 27001:2022 (cláusulas 4 a 10). Vários destes documentos já
+têm equivalente direto nos deliverables NIS2 gerados por `nis2 assess`
+(Declaração de Aplicabilidade, gap report, roadmap) — usa este checklist
+para confirmar o que falta complementar para efeitos de certificação.
+
+| Cláusula | Documento | Estado | Localização/responsável | Data |
+|---|---|---|---|---|
+{% for doc in documents -%}
+| {{ doc.clausula }} | {{ doc.documento }} | ☐ | | |
+{% endfor %}
+
+---
+
+*Checklist de apoio à consultoria — não substitui a auditoria de
+certificação por organismo acreditado (ISO/IEC 27006).*

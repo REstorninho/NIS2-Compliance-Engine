@@ -69,13 +69,23 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
   de remediação faseado, Statement of Applicability, plano de recolha de
   evidência (deriva do `evidence_contract` de cada controlo), relatório de
   auditoria jurídica, relatório de evolução entre assessments, relatório HTML
-  imprimível (radar embebido + marca do consultor), e o alerta inicial (24h)
-  / relatório detalhado (72h) do regime de notificação de incidentes ao CNCS
-  via MyCiber.
+  imprimível (radar embebido + marca do consultor), o alerta inicial (24h) /
+  relatório detalhado (72h) do regime de notificação de incidentes ao CNCS via
+  MyCiber, e o **crosswalk dual NIS2 ↔ ISO/IEC 27001/27002:2022** + checklist
+  de documentos obrigatórios do SGSI (ver secção seguinte).
+- `nis2_engine/iso27001.py` — reagrupa o mesmo `AssessmentResult` (sem
+  reavaliar nada) pela ótica da ISO/IEC 27001/27002:2022: cobertura por tema
+  (Organizacionais/Pessoas/Físicos/Tecnológicos, derivado do prefixo do Anexo
+  A já citado no crosswalk de cada controlo) e por medida mínima do Art. 21.º,
+  n.º 2 da NIS2 (a-j, com o catálogo ISO 27002 de referência por medida).
+  Inclui também a lista dos 11 documentos mínimos exigidos por um SGSI
+  certificável (`ISO27001_MANDATORY_DOCUMENTS`). Pensado para o consultor que
+  oferece certificação ISO 27001 como caminho de maturidade adicional sobre o
+  trabalho de conformidade NIS2 já feito com o cliente.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (75 testes).
+- `tests/` — testes do motor (82 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -117,7 +127,7 @@ Python. `nis2 --version` mostra a versão instalada.
 | `nis2 list-controls` | Lista o catálogo de controlos QNRCS (filtrável por `--level`/`--function`). |
 | `nis2 classify` | Classifica a entidade e gera o relatório de autoidentificação MyCiber. |
 | `nis2 scaffold` | Gera o questionário de maturidade em branco para o nível-alvo. |
-| `nis2 assess` | Corre o assessment e gera todos os deliverables (gap report, roadmap, SoA, evidência, radar, HTML). |
+| `nis2 assess` | Corre o assessment e gera todos os deliverables (gap report, roadmap, SoA, evidência, radar, HTML, crosswalk ISO 27001). |
 | `nis2 policies` | Gera o pacote de políticas chave (resposta a incidentes, fornecedores, BC/DR). |
 | `nis2 audit` | Relatório de rastreabilidade jurídica + checklist de validação manual (`--checklist`). |
 | `nis2 history` | Lista os snapshots de assessment gravados para uma entidade. |
@@ -142,8 +152,9 @@ nis2 classify examples/entity_camara.yaml -o out/self_identification.md
 nis2 scaffold examples/entity_camara.yaml -o answers.yaml
 
 # 3. Correr o assessment e gerar todos os deliverables (gap report, roadmap,
-#    SoA, autoidentificação, plano de recolha de evidência, radar SVG e
-#    relatório HTML imprimível com a marca do consultor)
+#    SoA, autoidentificação, plano de recolha de evidência, radar SVG,
+#    relatório HTML imprimível com a marca do consultor, e o crosswalk dual
+#    NIS2 ↔ ISO/IEC 27001/27002:2022 + checklist de documentos do SGSI)
 nis2 assess examples/entity_camara.yaml examples/answers_camara.yaml -o out/ --brand "Acme CyberSec"
 
 # 4. Gerar o pacote de políticas chave (evidência documental) para a entidade

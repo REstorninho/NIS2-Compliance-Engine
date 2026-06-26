@@ -14,6 +14,7 @@ from .audit import build_audit_report, build_validation_checklist
 from .classification import classify_entity, required_compliance_level
 from .history import build_snapshot, compare_snapshots, load_snapshots, save_snapshot
 from .incident import compute_deadlines
+from .iso27001 import build_iso27001_crosswalk
 from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType, IncidentNotification
 from .reporting import (
@@ -27,6 +28,8 @@ from .reporting import (
     render_incident_alert,
     render_incident_report,
     render_incident_response_policy,
+    render_iso27001_crosswalk,
+    render_iso27001_document_checklist,
     render_maturity_radar,
     render_progress_report,
     render_roadmap,
@@ -186,6 +189,11 @@ def cmd_assess(args: argparse.Namespace) -> int:
     (out_dir / "maturity_radar.svg").write_text(render_maturity_radar(result), encoding="utf-8")
     (out_dir / "report.html").write_text(
         render_html_report(result, entity_type, brand=args.brand), encoding="utf-8"
+    )
+    crosswalk = build_iso27001_crosswalk(result)
+    (out_dir / "iso27001_crosswalk.md").write_text(render_iso27001_crosswalk(crosswalk), encoding="utf-8")
+    (out_dir / "iso27001_document_checklist.md").write_text(
+        render_iso27001_document_checklist(entity), encoding="utf-8"
     )
 
     print(f"Entidade:       {entity.name} ({entity_type.value}, nível {target_level.value})")

@@ -60,6 +60,8 @@ def test_cli_scaffold_then_assess(tmp_path):
     html = report_html.read_text(encoding="utf-8")
     assert "<svg" in html
     assert "Acme" in html
+    assert (out_dir / "iso27001_crosswalk.md").exists()
+    assert (out_dir / "iso27001_document_checklist.md").exists()
 
 
 def test_cli_assess_out_of_scope_returns_error(tmp_path):

@@ -1,0 +1,61 @@
+# Crosswalk NIS2 ↔ ISO/IEC 27001/27002:2022 — {{ crosswalk.result.entity.name }}
+
+**Nível-alvo NIS2:** {{ crosswalk.result.target_level.value | capitalize }}
+**Score de conformidade NIS2:** {{ crosswalk.result.score_pct }}%
+**Refs. Anexo A citadas no crosswalk legal:** {{ crosswalk.annex_a_refs_cited }}
+
+## Resumo executivo
+
+Este relatório reaproveita o assessment NIS2 já realizado e reagrupa os
+mesmos controlos pela ótica da ISO/IEC 27001/27002:2022, para apoiar uma
+trajetória de certificação ISO sobre o trabalho de conformidade já feito —
+sem necessidade de reavaliar nada. Os controlos implementados aqui já
+contribuem como evidência para a Declaração de Aplicabilidade (SoA) de um
+SGSI 27001.
+
+> A certificação ISO/IEC 27001 não é legalmente exigida pela NIS2, mas é o
+> mecanismo mais defensável para demonstrar conformidade material com o
+> Art. 21.º do regime — ver `nis2 audit` para o estado de validação jurídica
+> do crosswalk citado.
+
+## Cobertura por tema ISO/IEC 27002:2022
+
+| Tema | Controlos | Implementados | Cobertura |
+|---|---|---|---|
+{% for group in crosswalk.by_theme -%}
+| {{ group.theme }} | {{ group.gaps | length }} | {{ group.implemented_count }} | {{ group.coverage_pct }}% |
+{% endfor %}
+
+{% for group in crosswalk.by_theme %}
+### {{ group.theme }}
+
+| Controlo | Anexo A (ISO 27002) | Maturidade | Estado |
+|---|---|---|---|
+{% for gap in group.gaps -%}
+| {{ gap.control.id }} — {{ gap.control.title }} | {{ gap.control.crosswalk.iso27001_annex_a | join(", ") }} | {{ gap.maturity }} | {{ "✅ Implementado" if gap.implemented else "❌ Gap" }} |
+{% endfor %}
+
+{% endfor %}
+
+## Cobertura por medida mínima (Art. 21.º, n.º 2, NIS2)
+
+| Medida | Descrição | Refs. ISO 27002 | Controlos | Cobertura |
+|---|---|---|---|---|
+{% for group in crosswalk.by_measure -%}
+| {{ group.letter | upper }} | {{ group.descricao }} | {{ group.iso_refs | join(", ") }} | {{ group.gaps | length }} | {{ group.coverage_pct }}% |
+{% endfor %}
+
+{% if crosswalk.uncited_gaps %}
+## Controlos sem referência Anexo A no crosswalk atual
+
+{% for gap in crosswalk.uncited_gaps -%}
+- {{ gap.control.id }} — {{ gap.control.title }} (sem `iso27001_annex_a` no corpus — a complementar)
+{% endfor %}
+{% endif %}
+
+---
+
+*Relatório gerado a partir do mesmo assessment NIS2 (`nis2 assess`). O
+crosswalk Anexo A por controlo está sujeito ao mesmo estado de validação
+jurídica de `nis2 audit` — confirmar artigo-a-artigo antes de uso formal
+numa auditoria de certificação.*

@@ -14,6 +14,7 @@ from .charts import QNRCS_FUNCTION_ORDER, render_maturity_radar_svg
 from .classification import SETORES_ESSENCIAIS, SETORES_IMPORTANTES
 from .history import ProgressDelta
 from .incident import NotificationDeadlines, compute_deadlines
+from .iso27001 import ISO27001_MANDATORY_DOCUMENTS, ISO27001Crosswalk
 from .loader import load_controls
 from .models import (
     MATURITY_IMPLEMENTED_THRESHOLD,
@@ -235,6 +236,23 @@ def render_incident_alert(incident: IncidentNotification, deadlines: Notificatio
 def render_incident_report(incident: IncidentNotification, deadlines: NotificationDeadlines | None = None) -> str:
     deadlines = deadlines or compute_deadlines(incident)
     return _env().get_template("incident_report_72h.md.j2").render(incident=incident, deadlines=deadlines)
+
+
+def render_iso27001_crosswalk(crosswalk: ISO27001Crosswalk) -> str:
+    """Relatório de crosswalk dual NIS2 ↔ ISO/IEC 27001/27002:2022, gerado a
+    partir de um assessment já calculado (ver `build_iso27001_crosswalk`)."""
+    return _env().get_template("iso27001_crosswalk.md.j2").render(crosswalk=crosswalk)
+
+
+def render_iso27001_document_checklist(entity: Entity, generated_at: str | None = None) -> str:
+    """Checklist dos documentos mínimos exigidos por um SGSI certificável
+    segundo a ISO/IEC 27001:2022, complementar à SoA já gerada para NIS2."""
+    generated_at = generated_at or datetime.now().strftime("%Y-%m-%d")
+    return _env().get_template("iso27001_document_checklist.md.j2").render(
+        entity=entity,
+        generated_at=generated_at,
+        documents=ISO27001_MANDATORY_DOCUMENTS,
+    )
 
 
 def render_self_identification(
