@@ -1,0 +1,42 @@
+id: junta_freguesia
+nome: Junta de Freguesia
+descricao: >
+  Freguesia (administração local de proximidade). Órgão da administração
+  pública — entidade pública relevante, ainda que de pequena dimensão e com
+  recursos limitados.
+setor: administracao_publica
+entidade:
+  employees: 12
+  annual_turnover_eur: 800000
+  is_public_body: true
+ambito_nota: >
+  Órgão da administração pública — qualifica-se como ENTIDADE PÚBLICA
+  RELEVANTE (DL 125/2025), independentemente da pequena dimensão. Aplicam-se as
+  medidas mínimas do Anexo IV, Grupo B (base). Pela escassez de recursos
+  internos, é típico recorrer a serviços geridos e priorizar medidas de baixo
+  custo e elevado impacto.
+nivel_referencia_sugerido: null
+ativos_criticos:
+  - Sítio institucional e formulários online
+  - Correio eletrónico institucional
+  - Dados pessoais de fregueses (atestados, recenseamento)
+  - Computadores administrativos e cópias de segurança
+cenarios:
+  - name: Phishing / comprometimento de email institucional
+    threat_actor: Cibercrime oportunista
+    probabilidade: 4
+    impacto: 3
+    description: >
+      Comprometimento de conta de email por phishing, com risco de fraude e
+      acesso a dados de fregueses.
+  - name: Ransomware em posto de trabalho sem cópias testadas
+    threat_actor: Cibercrime oportunista
+    probabilidade: 3
+    impacto: 4
+    description: >
+      Cifragem de ficheiros administrativos sem cópias de segurança testadas,
+      com perda de informação.
+notas:
+  - "Priorizar medidas de baixo custo: MFA no email (PRT-01), cópias de segurança testadas (PRT-10), formação anti-phishing (PRT-07)."
+  - "Considerar serviços geridos / partilha de recursos intermunicipais para suprir a falta de equipa interna."
+  - "Designar responsável de cibersegurança e ponto de contacto (GOV-01), mesmo que acumulado com outras funções."

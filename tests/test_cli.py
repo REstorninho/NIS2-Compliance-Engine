@@ -1,7 +1,50 @@
 import yaml
 
-from nis2_engine.cli import load_answers, load_entity, main
+from nis2_engine.cli import load_answers, load_entity, load_risk_scenarios, main
 from nis2_engine.models import EntityType
+
+
+def test_cli_profiles_lists_verticals(capsys):
+    assert main(["profiles"]) == 0
+    out = capsys.readouterr().out
+    assert "camara_municipal" in out
+    assert "hotelaria" in out
+
+
+def test_cli_profile_scaffolds_entity_and_scenarios(tmp_path):
+    out_dir = tmp_path / "perfil"
+    assert main(["profile", "camara_municipal", "-o", str(out_dir)]) == 0
+    entity_path = out_dir / "entity.yaml"
+    scenarios_path = out_dir / "scenarios.yaml"
+    assert entity_path.exists()
+    assert scenarios_path.exists()
+    # Os ficheiros gerados têm de ser consumíveis pelos loaders da CLI.
+    entity = load_entity(entity_path)
+    assert entity.is_public_body is True
+    scenarios = load_risk_scenarios(scenarios_path)
+    assert scenarios
+    assert 1 <= scenarios[0].probabilidade <= 5
+
+
+def test_cli_profile_unknown_returns_error(tmp_path, capsys):
+    rc = main(["profile", "nao_existe", "-o", str(tmp_path / "x")])
+    assert rc == 1
+    assert "não encontrado" in capsys.readouterr().err
+
+
+def test_cli_dossier_aggregates_md_into_branded_html(tmp_path):
+    md_dir = tmp_path / "out"
+    md_dir.mkdir()
+    (md_dir / "risk_matrix.md").write_text("# Matriz\n\n- cenário", encoding="utf-8")
+    (md_dir / "gap_report.md").write_text("# Gap\n\nconteúdo", encoding="utf-8")
+    dossier = tmp_path / "dossier.html"
+    rc = main(["dossier", str(md_dir), "-o", str(dossier), "--brand", "Acme"])
+    assert rc == 0
+    html = dossier.read_text(encoding="utf-8")
+    assert html.startswith("<!DOCTYPE html>")
+    assert "Acme" in html
+    assert "Matriz de Risco (Anexo II)" in html
+    assert "Gap Analysis" in html
 
 
 def _write(path, data):

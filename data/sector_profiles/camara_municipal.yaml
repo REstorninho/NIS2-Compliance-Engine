@@ -1,0 +1,51 @@
+id: camara_municipal
+nome: Câmara Municipal
+descricao: >
+  Município (administração local). Como órgão da administração pública, é
+  entidade pública relevante independentemente da dimensão.
+setor: administracao_publica
+entidade:
+  employees: 300
+  annual_turnover_eur: 25000000
+  is_public_body: true
+# Âmbito: administração pública → entidade pública relevante (nível de
+# referência Elevado). A qualificação definitiva é da autoridade competente.
+ambito_nota: >
+  Órgão da administração pública local — qualifica-se como ENTIDADE PÚBLICA
+  RELEVANTE (art. 55.º e ss. do DL 125/2025), aplicando-se as medidas mínimas
+  do Anexo IV. A dimensão não afasta o âmbito. Sujeita-se às medidas do Grupo B
+  e, consoante a criticidade dos serviços, do Grupo A.
+nivel_referencia_sugerido: null
+ativos_criticos:
+  - Portal municipal e serviços online ao munícipe
+  - Sistema de gestão documental / arquivo eletrónico
+  - Sistemas financeiros e de tesouraria
+  - Bases de dados de munícipes (RGPD)
+  - Sistemas de gestão urbanística e cadastro
+  - Infraestrutura de rede e correio eletrónico
+cenarios:
+  - name: Ransomware nos sistemas municipais
+    threat_actor: Cibercrime organizado
+    probabilidade: 4
+    impacto: 5
+    description: >
+      Cifragem de sistemas críticos com interrupção de serviços ao munícipe e
+      potencial perda de dados administrativos.
+  - name: Fuga de dados pessoais de munícipes
+    threat_actor: Atacante externo / insider
+    probabilidade: 3
+    impacto: 4
+    description: >
+      Exfiltração de bases de dados com dados pessoais, acionando o regime do
+      RGPD e a notificação à CNPD.
+  - name: Comprometimento do portal de serviços online
+    threat_actor: Hacktivismo / cibercrime
+    probabilidade: 3
+    impacto: 3
+    description: >
+      Indisponibilidade ou desfiguração do portal municipal, afetando a
+      prestação de serviços públicos digitais.
+notas:
+  - "Designar responsável de cibersegurança e ponto de contacto permanente (GOV-01)."
+  - "Lista de ativos publicamente acessíveis (art. 32.º) — grau reservado; prazo até 31 de janeiro ou 6 meses após notificação."
+  - "Avaliar medidas do Grupo A do Anexo IV se prestar serviços críticos."
