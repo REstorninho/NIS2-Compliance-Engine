@@ -8,7 +8,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from .assessment import _PRIORITY_BY_FUNCTION
+from .assessment import PRIORITY_BY_FUNCTION
 from .audit import VALIDATION_CHECKLIST_FIELDS, AuditReport
 from .charts import QNRCS_FUNCTION_ORDER, render_maturity_radar_svg
 from .classification import SETORES_ESSENCIAIS, SETORES_IMPORTANTES
@@ -28,7 +28,7 @@ from .models import (
     IncidentNotification,
     StatementOfApplicability,
 )
-from .roadmap import _PHASES_BY_PRIORITY, _PHASE_ORDER, RemediationRoadmap
+from .roadmap import PHASES_BY_PRIORITY, PHASE_ORDER, RemediationRoadmap
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates" / "deliverables"
 _POLICIES_DIR = Path(__file__).resolve().parent.parent / "templates" / "policies"
@@ -126,13 +126,13 @@ def build_classifier_config() -> dict:
             }
             for c in sorted(load_controls(), key=lambda c: c.id)
         ],
-        "priority_by_function": dict(_PRIORITY_BY_FUNCTION),
+        "priority_by_function": dict(PRIORITY_BY_FUNCTION),
         "radar_order": list(QNRCS_FUNCTION_ORDER),
         "maturity_threshold": MATURITY_IMPLEMENTED_THRESHOLD,
         "maturity_labels": {str(k): v for k, v in MATURITY_LABELS.items()},
         "phases": [
-            {"priority": p, "name": _PHASES_BY_PRIORITY[p][0], "timeframe": _PHASES_BY_PRIORITY[p][1]}
-            for p in sorted(_PHASES_BY_PRIORITY, key=lambda p: _PHASE_ORDER[p])
+            {"priority": p, "name": PHASES_BY_PRIORITY[p][0], "timeframe": PHASES_BY_PRIORITY[p][1]}
+            for p in sorted(PHASES_BY_PRIORITY, key=lambda p: PHASE_ORDER[p])
         ],
     }
 
@@ -236,6 +236,39 @@ def render_incident_alert(incident: IncidentNotification, deadlines: Notificatio
 def render_incident_report(incident: IncidentNotification, deadlines: NotificationDeadlines | None = None) -> str:
     deadlines = deadlines or compute_deadlines(incident)
     return _env().get_template("incident_report_72h.md.j2").render(incident=incident, deadlines=deadlines)
+
+
+def render_risk_matrix(matrix) -> str:
+    """Relatório da Matriz de Risco (Anexo II): cenários, valor total, nível
+    pela matriz, nível de referência e nível efetivo (agregação art. 30.º)."""
+    return _env().get_template("risk_matrix.md.j2").render(matrix=matrix)
+
+
+def render_significance_triage(incident: IncidentNotification, verdict) -> str:
+    """Relatório de triagem de impacto significativo (Reg. UE 2024/2690)."""
+    return _env().get_template("significance_triage.md.j2").render(incident=incident, verdict=verdict)
+
+
+def render_deadlines(entity_name: str, reference_date, obligations: list, today=None) -> str:
+    """Calendário de obrigações NIS2 da entidade, com o estado de cada prazo."""
+    from datetime import date
+
+    today = today or date.today()
+    estado_icon = {"vencido": "🔴", "a_vencer": "🟠", "futuro": "🟢"}
+    return _env().get_template("deadlines.md.j2").render(
+        entity_name=entity_name,
+        reference_date=reference_date,
+        today=today,
+        today_date=today,
+        obligations=obligations,
+        estado_icon=estado_icon,
+    )
+
+
+def render_portfolio(entries: list, generated_at: str | None = None) -> str:
+    """Vista agregada da carteira de clientes (um cliente por linha)."""
+    generated_at = generated_at or datetime.now().strftime("%Y-%m-%d")
+    return _env().get_template("portfolio.md.j2").render(entries=entries, generated_at=generated_at)
 
 
 def render_iso27001_crosswalk(crosswalk: ISO27001Crosswalk) -> str:

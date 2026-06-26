@@ -105,3 +105,23 @@ def test_compare_snapshots_detects_progress_and_regression():
     assert delta.maturity_delta == 30.0
     assert delta.newly_implemented == ["GOV-01"]
     assert delta.regressed == ["PROT-01"]
+
+
+def test_build_portfolio_aggregates_by_entity_with_trend(tmp_path):
+    from nis2_engine.history import build_portfolio
+
+    gaps = [GapItem(control=_control("GOV-01"), implemented=True, priority="alta", maturity=5)]
+    s1 = build_snapshot(_result(gaps), generated_at="2026-01-01T00:00:00")
+    s1.score_pct = 30.0
+    s2 = build_snapshot(_result(gaps), generated_at="2026-02-01T00:00:00")
+    s2.score_pct = 60.0
+    save_snapshot(s1, tmp_path)
+    save_snapshot(s2, tmp_path)
+
+    portfolio = build_portfolio(tmp_path)
+    assert len(portfolio) == 1
+    entry = portfolio[0]
+    assert entry.entity_name == "Energia SA"
+    assert entry.assessments_count == 2
+    assert entry.score_pct == 60.0  # mais recente
+    assert entry.trend == "↑"  # 60 > 30

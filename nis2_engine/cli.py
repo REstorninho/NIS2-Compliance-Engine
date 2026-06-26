@@ -12,11 +12,13 @@ from jsonschema.exceptions import ValidationError
 from .assessment import run_assessment
 from .audit import build_audit_report, build_validation_checklist
 from .classification import classify_entity, required_compliance_level
-from .history import build_snapshot, compare_snapshots, load_snapshots, save_snapshot
-from .incident import compute_deadlines
+from .deadlines import build_obligations_calendar
+from .history import build_portfolio, build_snapshot, compare_snapshots, load_snapshots, save_snapshot
+from .incident import SignificanceCriteria, assess_significance, compute_deadlines
 from .iso27001 import build_iso27001_crosswalk
 from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType, IncidentNotification
+from .risk_matrix import RiskScenario, build_risk_matrix, most_demanding
 from .reporting import (
     render_audit_report,
     render_classifier_form,
@@ -30,9 +32,13 @@ from .reporting import (
     render_incident_response_policy,
     render_iso27001_crosswalk,
     render_iso27001_document_checklist,
+    render_deadlines,
     render_maturity_radar,
+    render_portfolio,
     render_progress_report,
+    render_risk_matrix,
     render_roadmap,
+    render_significance_triage,
     render_self_identification,
     render_soa,
     render_supplier_security_policy,
@@ -89,6 +95,40 @@ def load_incident(path: Path, entity: Entity) -> IncidentNotification:
         root_cause=raw.get("root_cause", ""),
         mitigation_actions=raw.get("mitigation_actions", []),
         status=raw.get("status", "em_curso"),
+    )
+
+
+def load_risk_scenarios(path: Path) -> list[RiskScenario]:
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    scenarios_raw = raw.get("scenarios", raw) if isinstance(raw, dict) else raw
+    scenarios: list[RiskScenario] = []
+    for item in scenarios_raw:
+        scenarios.append(
+            RiskScenario(
+                name=item["name"],
+                probabilidade=int(item["probabilidade"]),
+                impacto=int(item["impacto"]),
+                threat_actor=item.get("threat_actor", ""),
+                description=item.get("description", ""),
+            )
+        )
+    return scenarios
+
+
+def _load_significance(raw: dict) -> SignificanceCriteria | None:
+    """Lê o bloco opcional `significance` do YAML do incidente."""
+    block = raw.get("significance")
+    if not block:
+        return None
+    return SignificanceCriteria(
+        perturbacao_operacional_grave=bool(block.get("perturbacao_operacional_grave", False)),
+        afeta_outras_entidades=bool(block.get("afeta_outras_entidades", False)),
+        perdas_financeiras_eur=float(block.get("perdas_financeiras_eur", 0.0)),
+        utilizadores_afetados=int(block.get("utilizadores_afetados", 0)),
+        indisponibilidade_horas=float(block.get("indisponibilidade_horas", 0.0)),
+        suspeita_ato_ilicito=bool(block.get("suspeita_ato_ilicito", False)),
+        impacto_transfronteirico=bool(block.get("impacto_transfronteirico", False)),
+        incidente_recorrente=bool(block.get("incidente_recorrente", False)),
     )
 
 
@@ -170,7 +210,18 @@ def cmd_assess(args: argparse.Namespace) -> int:
         print("Entidade fora de âmbito — sem nível de conformidade exigido.", file=sys.stderr)
         return 1
 
-    target_level = _resolve_target_level(entity, entity_type, args.level)
+    # Nível-alvo: por omissão deriva do tipo de entidade; --level força-o; e
+    # --risk computa-o pela Matriz de Risco (Anexo II), aplicando a agregação
+    # do art. 30.º (o mais exigente entre matriz e tipo de entidade).
+    matrix = None
+    if getattr(args, "risk", None):
+        nivel_referencia = required_compliance_level(entity_type)
+        scenarios = load_risk_scenarios(Path(args.risk))
+        matrix = build_risk_matrix(entity, scenarios, nivel_referencia=nivel_referencia)
+        target_level = matrix.nivel_efetivo if not args.level else ComplianceLevel(args.level)
+    else:
+        target_level = _resolve_target_level(entity, entity_type, args.level)
+
     controls = load_controls()
     answers = load_answers(Path(args.answers))
     result = run_assessment(entity, target_level, controls, answers)
@@ -179,6 +230,8 @@ def cmd_assess(args: argparse.Namespace) -> int:
 
     out_dir = Path(args.output)
     out_dir.mkdir(parents=True, exist_ok=True)
+    if matrix is not None:
+        (out_dir / "risk_matrix.md").write_text(render_risk_matrix(matrix), encoding="utf-8")
     (out_dir / "gap_report.md").write_text(render_gap_report(result), encoding="utf-8")
     (out_dir / "roadmap.md").write_text(render_roadmap(roadmap), encoding="utf-8")
     (out_dir / "statement_of_applicability.md").write_text(render_soa(soa), encoding="utf-8")
@@ -259,14 +312,28 @@ def cmd_history(args: argparse.Namespace) -> int:
 
 def cmd_incident(args: argparse.Namespace) -> int:
     """Gera os deliverables do regime de notificação de incidentes ao CNCS via
-    MyCiber (DL 125/2025, Art. 23): alerta inicial (24h) e relatório detalhado
-    (72h), com os prazos calculados a partir da deteção do incidente."""
+    MyCiber (DL 125/2025, Art. 23): triagem de impacto significativo, alerta
+    inicial (24h) e relatório detalhado (72h), com os prazos calculados a
+    partir da deteção do incidente."""
     entity = load_entity(Path(args.entity))
+    raw = yaml.safe_load(Path(args.incident).read_text(encoding="utf-8"))
     incident = load_incident(Path(args.incident), entity)
     deadlines = compute_deadlines(incident)
 
     out_dir = Path(args.output)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Triagem de impacto significativo (Reg. UE 2024/2690). Usa o bloco
+    # opcional `significance` do YAML; na ausência, faz uma triagem mínima a
+    # partir dos campos já existentes do incidente.
+    criteria = _load_significance(raw) or SignificanceCriteria(
+        impacto_transfronteirico=incident.cross_border_effect
+    )
+    verdict = assess_significance(criteria, dados_pessoais_envolvidos=bool(raw.get("dados_pessoais_envolvidos", False)))
+    (out_dir / "triagem_significancia.md").write_text(
+        render_significance_triage(incident, verdict), encoding="utf-8"
+    )
+
     (out_dir / "alerta_inicial_24h.md").write_text(
         render_incident_alert(incident, deadlines), encoding="utf-8"
     )
@@ -276,10 +343,82 @@ def cmd_incident(args: argparse.Namespace) -> int:
 
     print(f"Incidente:             {incident.incident_id} ({incident.severity})")
     print(f"Detetado em:           {incident.detected_at.isoformat()}")
+    print(f"Significativo:         {'SIM' if verdict.significativo else 'a reavaliar'}")
     print(f"Prazo alerta inicial:  {deadlines.alerta_inicial.isoformat()}")
     print(f"Prazo relatório 72h:   {deadlines.relatorio_detalhado.isoformat()}")
     print(f"Prazo relatório final: {deadlines.relatorio_final.isoformat()}")
     print(f"Deliverables escritos em: {out_dir}/")
+    return 0
+
+
+def cmd_risk(args: argparse.Namespace) -> int:
+    """Aplica a Matriz de Risco do Anexo II a partir de cenários de risco e
+    determina o nível de conformidade exigido (matriz + agregação art. 30.º)."""
+    entity = load_entity(Path(args.entity))
+    entity_type = classify_entity(entity)
+    nivel_referencia = (
+        None if entity_type is EntityType.FORA_DE_AMBITO else required_compliance_level(entity_type)
+    )
+    scenarios = load_risk_scenarios(Path(args.scenarios))
+    matrix = build_risk_matrix(entity, scenarios, nivel_referencia=nivel_referencia)
+
+    print(f"Entidade:           {matrix.entity_name}")
+    print(f"Dimensão:           {matrix.dimensao} (fator {matrix.dimensao_fator})")
+    print(f"Tipo de setor:      {matrix.tipo_setor} (fator {matrix.tipo_setor_fator})")
+    print(f"Valor de risco:     {matrix.total}")
+    print(f"Nível pela matriz:  {matrix.nivel_matriz.value}")
+    if matrix.nivel_referencia:
+        print(f"Nível por tipo:     {matrix.nivel_referencia.value}")
+    print(f"Nível efetivo:      {matrix.nivel_efetivo.value}")
+    for aviso in matrix.avisos:
+        print(f"  ⚠️ {aviso}")
+
+    if args.output:
+        _write_output(args.output, render_risk_matrix(matrix))
+        print(f"\nMatriz de risco escrita em: {args.output}")
+    return 0
+
+
+def cmd_deadlines(args: argparse.Namespace) -> int:
+    """Gera o calendário de obrigações da entidade a partir da data de
+    qualificação/notificação (lista de ativos art. 32.º, relatório anual,
+    designação de responsável/ponto de contacto)."""
+    from datetime import date
+
+    entity = load_entity(Path(args.entity))
+    reference_date = date.fromisoformat(args.since)
+    obligations = build_obligations_calendar(entity.name, reference_date)
+
+    print(f"Entidade: {entity.name}  ·  Referência: {reference_date}\n")
+    print(f"{'Estado':<10} {'Prazo':<12} Obrigação")
+    print(f"{'-' * 10} {'-' * 12} {'-' * 40}")
+    for o in obligations:
+        print(f"{o.estado(date.today()):<10} {str(o.due_date):<12} {o.nome}")
+
+    if args.output:
+        _write_output(args.output, render_deadlines(entity.name, reference_date, obligations))
+        print(f"\nCalendário de obrigações escrito em: {args.output}")
+    return 0
+
+
+def cmd_portfolio(args: argparse.Namespace) -> int:
+    """Vista agregada da carteira de clientes a partir dos snapshots gravados
+    com `nis2 assess --history-dir`: nível, score, maturidade e tendência por
+    entidade."""
+    entries = build_portfolio(Path(args.history_dir))
+    if not entries:
+        print(f"Sem snapshots em {args.history_dir}/.", file=sys.stderr)
+        return 1
+
+    print(f"Carteira de clientes ({len(entries)} entidade(s)):\n")
+    print(f"{'Entidade':<32} {'Nível':<12} {'Score':>7} {'Mat.':>7} {'Tend.':>5}")
+    print(f"{'-' * 32} {'-' * 12} {'-' * 7} {'-' * 7} {'-' * 5}")
+    for e in entries:
+        print(f"{e.entity_name[:32]:<32} {e.target_level:<12} {e.score_pct:>6}% {e.maturity_score_pct:>6}% {e.trend:>5}")
+
+    if args.output:
+        _write_output(args.output, render_portfolio(entries))
+        print(f"\nCarteira escrita em: {args.output}")
     return 0
 
 
@@ -395,7 +534,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_assess.add_argument("--level", choices=[l.value for l in ComplianceLevel], help="Forçar nível-alvo em vez do derivado da classificação.")
     p_assess.add_argument("--history-dir", help="Diretório onde gravar um snapshot deste assessment (para comparação futura com 'nis2 progress').")
     p_assess.add_argument("--brand", default="", help="Nome/marca do consultor a apresentar no relatório HTML.")
+    p_assess.add_argument("--risk", help="Ficheiro YAML com cenários de risco — computa o nível-alvo pela Matriz de Risco (Anexo II) em vez do tipo de entidade.")
     p_assess.set_defaults(func=cmd_assess)
+
+    p_risk = sub.add_parser("risk", help="Aplica a Matriz de Risco (Anexo II) a cenários de risco e determina o nível exigido.")
+    p_risk.add_argument("entity", help="Ficheiro YAML com o perfil da entidade.")
+    p_risk.add_argument("scenarios", help="Ficheiro YAML com os cenários de risco (name, probabilidade, impacto, threat_actor).")
+    p_risk.add_argument("-o", "--output", help="Caminho para escrever o relatório da matriz (markdown).")
+    p_risk.set_defaults(func=cmd_risk)
+
+    p_deadlines = sub.add_parser("deadlines", help="Gera o calendário de obrigações da entidade (art. 32.º, relatório anual, designação).")
+    p_deadlines.add_argument("entity", help="Ficheiro YAML com o perfil da entidade.")
+    p_deadlines.add_argument("--since", required=True, help="Data de qualificação/notificação (YYYY-MM-DD).")
+    p_deadlines.add_argument("-o", "--output", help="Caminho para escrever o calendário (markdown).")
+    p_deadlines.set_defaults(func=cmd_deadlines)
+
+    p_portfolio = sub.add_parser("portfolio", help="Vista agregada da carteira de clientes a partir dos snapshots de histórico.")
+    p_portfolio.add_argument("--history-dir", required=True, help="Diretório com os snapshots gravados por 'nis2 assess --history-dir'.")
+    p_portfolio.add_argument("-o", "--output", help="Caminho para escrever a carteira (markdown).")
+    p_portfolio.set_defaults(func=cmd_portfolio)
 
     p_progress = sub.add_parser("progress", help="Compara os dois assessments mais recentes de uma entidade e gera um relatório de evolução.")
     p_progress.add_argument("entity", help="Nome da entidade (igual ao usado no perfil YAML).")

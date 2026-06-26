@@ -1,0 +1,30 @@
+# Calendário de Obrigações NIS2 — {{ entity_name }}
+
+**Data de referência (qualificação/notificação):** {{ reference_date }}
+**Gerado em:** {{ today }}
+
+| Estado | Obrigação | Base legal | Prazo | Recorrência |
+|---|---|---|---|---|
+{% for o in obligations -%}
+| {{ estado_icon[o.estado(today_date)] }} {{ o.estado(today_date) | replace("_", " ") | capitalize }} | {{ o.nome }} | {{ o.base_legal }} | {{ o.due_date }} | {{ o.recorrencia }} |
+{% endfor %}
+
+## Detalhe
+
+{% for o in obligations %}
+### {{ o.nome }}
+
+- **Base legal:** {{ o.base_legal }}
+- **Prazo:** {{ o.due_date }} ({{ o.estado(today_date) | replace("_", " ") }})
+- **Recorrência:** {{ o.recorrencia }}
+
+{{ o.descricao }}
+
+{% endfor %}
+
+---
+
+*Calendário de apoio ao planeamento. Os prazos exatos devem ser confirmados
+contra o DL 125/2025 e o Regulamento n.º 756/2026 publicados em Diário da
+República. A lista de ativos do art. 32.º é informação classificada de grau
+reservado.*

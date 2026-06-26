@@ -1,0 +1,41 @@
+# Matriz de Risco (Anexo II) — {{ matrix.entity_name }}
+
+**Dimensão:** {{ matrix.dimensao | capitalize }} (fator {{ "%.3f"|format(matrix.dimensao_fator) }})
+**Tipo de setor:** {{ matrix.tipo_setor | replace("_", " ") | capitalize }} (fator {{ matrix.tipo_setor_fator }})
+**Valor de risco total:** {{ matrix.total }}
+
+## Nível de conformidade exigido
+
+| Origem | Nível |
+|---|---|
+| Cálculo da matriz (Anexo II) | **{{ matrix.nivel_matriz.value | capitalize }}** |
+{% if matrix.nivel_referencia %}| Tipo de entidade (referência) | {{ matrix.nivel_referencia.value | capitalize }} |
+{% endif %}| **Nível efetivo (agregação, art. 30.º)** | **{{ matrix.nivel_efetivo.value | capitalize }}** |
+
+> Fórmula por cenário: `valor = Probabilidade × Impacto × (Dimensão/3) × Tipo de setor`.
+> Limiares: Básico 0–99 · Substancial 100–199 · Elevado 200–1200.
+
+{% if matrix.avisos %}
+### Avisos
+
+{% for aviso in matrix.avisos -%}
+- ⚠️ {{ aviso }}
+{% endfor %}
+{% endif %}
+
+## Cenários considerados
+
+| Cenário | Ator / ameaça | Probabilidade | Impacto | Valor de risco |
+|---|---|---:|---:|---:|
+{% for r in matrix.scenarios -%}
+| {{ r.scenario.name }} | {{ r.scenario.threat_actor or "—" }} | {{ r.scenario.probabilidade }} | {{ r.scenario.impacto }} | {{ r.valor }} |
+{% endfor %}
+| | | | **Total** | **{{ matrix.total }}** |
+
+---
+
+*Matriz de risco gerada pelo motor de conformidade NIS2 (Anexo II do
+Regulamento n.º 756/2026). As bandas de dimensão (PME) e a classificação
+setorial carecem de validação artigo-a-artigo contra o texto oficial — ver
+`nis2 audit`. O nível efetivo aqui apurado é o ponto de partida da seleção de
+medidas mínimas (Anexos III/IV).*

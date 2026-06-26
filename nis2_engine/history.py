@@ -104,6 +104,69 @@ def load_snapshots(history_dir: Path, entity_name: str) -> list[AssessmentSnapsh
     return sorted(snapshots, key=lambda s: s.generated_at)
 
 
+@dataclass
+class PortfolioEntry:
+    """Linha da carteira de clientes: estado mais recente de uma entidade,
+    com a tendência face ao assessment anterior."""
+
+    entity_name: str
+    sector: str
+    target_level: str
+    latest_date: str
+    score_pct: float
+    maturity_score_pct: float
+    assessments_count: int
+    trend: str  # "↑" / "↓" / "→"
+
+
+def _all_snapshots(history_dir: Path) -> list[AssessmentSnapshot]:
+    snapshots = []
+    for path in sorted(history_dir.glob("*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        snapshots.append(AssessmentSnapshot.from_dict(data))
+    return snapshots
+
+
+def build_portfolio(history_dir: Path) -> list[PortfolioEntry]:
+    """Constrói a carteira de clientes a partir de todos os snapshots gravados:
+    uma linha por entidade (pelo nome exato), com o estado mais recente e a
+    tendência de score face ao assessment imediatamente anterior."""
+    if not history_dir.exists():
+        return []
+
+    by_entity: dict[str, list[AssessmentSnapshot]] = {}
+    for snap in _all_snapshots(history_dir):
+        by_entity.setdefault(snap.entity_name, []).append(snap)
+
+    entries: list[PortfolioEntry] = []
+    for name, snaps in by_entity.items():
+        snaps = sorted(snaps, key=lambda s: s.generated_at)
+        latest = snaps[-1]
+        if len(snaps) >= 2:
+            prev = snaps[-2]
+            if latest.score_pct > prev.score_pct:
+                trend = "↑"
+            elif latest.score_pct < prev.score_pct:
+                trend = "↓"
+            else:
+                trend = "→"
+        else:
+            trend = "→"
+        entries.append(
+            PortfolioEntry(
+                entity_name=name,
+                sector=latest.sector,
+                target_level=latest.target_level,
+                latest_date=latest.generated_at,
+                score_pct=latest.score_pct,
+                maturity_score_pct=latest.maturity_score_pct,
+                assessments_count=len(snaps),
+                trend=trend,
+            )
+        )
+    return sorted(entries, key=lambda e: e.score_pct)
+
+
 def compare_snapshots(old: AssessmentSnapshot, new: AssessmentSnapshot) -> ProgressDelta:
     """Compara dois snapshots da mesma entidade e devolve a evolução: score,
     maturidade por função, e que controlos passaram a/deixaram de estar
