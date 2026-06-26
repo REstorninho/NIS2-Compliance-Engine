@@ -664,8 +664,25 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="nis2",
         description="Motor de conformidade NIS2 (DL 125/2025 + Regulamento 756/2026).",
+        epilog=(
+            "Exemplos:\n"
+            "  nis2 classify entity.yaml\n"
+            "  nis2 assess entity.yaml answers.yaml -o out/\n"
+            "  nis2 list-controls --level substancial\n"
+            "  nis2 list-controls DET-01\n"
+            "  nis2 serve --port 8000\n"
+            "\n"
+            "Para mais detalhe sobre um comando: nis2 <comando> --help\n"
+            "Use --debug (antes do comando) para ver o traceback completo em caso de erro."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version", version=f"nis2 {_version_string()}")
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Mostra o traceback completo em caso de erro, em vez da mensagem resumida (para diagnóstico).",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_classify = sub.add_parser("classify", help="Classifica a entidade e (opcionalmente) gera o relatório de autoidentificação.")
@@ -786,23 +803,32 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    debug = getattr(args, "debug", False)
     try:
         return args.func(args)
     except FileNotFoundError as exc:
-        print(f"Erro: ficheiro não encontrado — {exc.filename or exc}", file=sys.stderr)
-        return 1
+        return _handle_error(f"ficheiro não encontrado — {exc.filename or exc}", debug)
     except KeyError as exc:
-        print(f"Erro: campo obrigatório em falta no ficheiro YAML — {exc.args[0]}", file=sys.stderr)
-        return 1
+        return _handle_error(f"campo obrigatório em falta no ficheiro YAML — {exc.args[0]}", debug)
     except yaml.YAMLError as exc:
-        print(f"Erro: YAML inválido — {exc}", file=sys.stderr)
-        return 1
+        return _handle_error(f"YAML inválido — {exc}", debug)
     except ValidationError as exc:
-        print(f"Erro: controlo não cumpre o schema esperado — {exc.message}", file=sys.stderr)
-        return 1
+        return _handle_error(f"controlo não cumpre o schema esperado — {exc.message}", debug)
     except ValueError as exc:
-        print(f"Erro: {exc}", file=sys.stderr)
-        return 1
+        return _handle_error(str(exc), debug)
+    except Exception as exc:
+        if debug:
+            raise
+        return _handle_error(f"erro inesperado — {exc}. Repete com --debug para o traceback completo.", debug)
+
+
+def _handle_error(message: str, debug: bool) -> int:
+    if debug:
+        import traceback
+
+        traceback.print_exc()
+    print(f"Erro: {message}", file=sys.stderr)
+    return 1
 
 
 if __name__ == "__main__":
