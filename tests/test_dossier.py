@@ -55,6 +55,20 @@ def test_build_dossier_html_is_self_contained_with_brand_cover_and_toc():
     assert "page-break" in html
 
 
+def test_known_titles_match_real_engine_filenames(tmp_path):
+    # Os nomes de ficheiro que o motor/web app escrevem têm de bater certo com
+    # as chaves de _KNOWN_TITLES, senão os deliverables saem com título genérico
+    # e fora da ordem canónica no dossier.
+    for filename, expected in (
+        ("self_identification.md", "Autoidentificação (MyCiber)"),
+        ("statement_of_applicability.md", "Declaração de Aplicabilidade (SoA)"),
+    ):
+        (tmp_path / filename).write_text(f"# {filename}", encoding="utf-8")
+    titles = [s.title for s in collect_sections(tmp_path)]
+    assert "Autoidentificação (MyCiber)" in titles
+    assert "Declaração de Aplicabilidade (SoA)" in titles
+
+
 def test_collect_sections_orders_known_deliverables_first(tmp_path):
     (tmp_path / "zzz_outro.md").write_text("# Outro", encoding="utf-8")
     (tmp_path / "gap_report.md").write_text("# Gap", encoding="utf-8")

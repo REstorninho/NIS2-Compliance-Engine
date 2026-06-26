@@ -177,8 +177,17 @@ el('include_assessment').addEventListener('change',function(){
 });
 
 // --- Prefil por perfil ---
+function ensureSectorOption(value){
+  if(!value)return;
+  var sel=el('sector');
+  var found=Array.prototype.some.call(sel.options,function(o){return o.value===value;});
+  if(!found){var o=document.createElement('option');o.value=value;o.textContent=value;sel.appendChild(o);}
+}
 function applyProfile(p){
   el('name').value=p.nome||'';
+  // Perfis fora dos Anexos I/II (hotelaria/turismo) usam setores que não
+  // constam do dropdown — adiciona a opção para o setor real ser submetido.
+  ensureSectorOption(p.setor);
   el('sector').value=p.setor||'outro';
   el('employees').value=p.employees||0;
   el('turnover').value=p.turnover||0;
