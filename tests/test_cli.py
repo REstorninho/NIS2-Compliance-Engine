@@ -189,6 +189,40 @@ def test_cli_incident_writes_alert_and_report(tmp_path):
     assert "Em investigação." in report.read_text(encoding="utf-8")
 
 
+def test_cli_incident_writes_end_of_impact_and_final_report(tmp_path):
+    entity = _write(
+        tmp_path / "entity.yaml",
+        {"name": "Energia SA", "sector": "energia", "employees": 200, "annual_turnover_eur": 50_000_000},
+    )
+    incident = _write(
+        tmp_path / "incident.yaml",
+        {
+            "incident_id": "INC-2026-009",
+            "detected_at": "2026-06-24T09:00:00",
+            "severity": "alto",
+            "description": "Ransomware num servidor de ficheiros.",
+            "threat_type": "Ransomware",
+            "significant_impact_ended_at": "2026-06-25T09:00:00",
+            "ongoing_mitigation_actions": ["Restauro a partir de cópias offline"],
+            "lessons_learned": "Testar restauros trimestralmente.",
+            "status": "encerrado",
+        },
+    )
+    out_dir = tmp_path / "out" / "incidente"
+    assert main(["incident", str(entity), str(incident), "-o", str(out_dir)]) == 0
+    end = out_dir / "fim_impacto_significativo.md"
+    final = out_dir / "relatorio_final.md"
+    assert end.exists()
+    assert final.exists()
+    # Fim do impacto: 24h de duração (deteção -> fim).
+    assert "24.0 h" in end.read_text(encoding="utf-8")
+    final_text = final.read_text(encoding="utf-8")
+    assert "Art. 44" in final_text
+    assert "FINAL" in final_text
+    assert "Ransomware" in final_text
+    assert "Testar restauros trimestralmente." in final_text
+
+
 def test_cli_history_lists_snapshots(tmp_path, capsys):
     entity = _write(
         tmp_path / "entity.yaml",

@@ -1,0 +1,72 @@
+# Relatório Final de Incidente — MyCiber
+
+> Relatório previsto no **Art. 44.º do DL 125/2025**, a submeter no prazo de
+> **um mês** após o relatório detalhado. Se o incidente ainda decorrer nesse
+> prazo, este documento serve de **relatório intercalar**, sendo o relatório
+> final apresentado no prazo de um mês após o tratamento do incidente.
+
+**Entidade:** {{ incident.entity.name }}
+**ID do incidente (interno):** {{ incident.incident_id }}
+**Data/hora de deteção:** {{ incident.detected_at.strftime("%Y-%m-%d %H:%M") }}
+**Prazo legal (1 mês, Art. 44.º DL 125/2025):** {{ deadlines.relatorio_final.strftime("%Y-%m-%d %H:%M") }}
+**Gravidade:** {{ incident.severity | upper }}
+**Estado:** {{ incident.status }}
+{% if incident.status not in ["encerrado", "resolvido"] %}
+**Natureza deste relatório:** INTERCALAR — o incidente ainda decorre; o relatório final seguirá após o tratamento.
+{% else %}
+**Natureza deste relatório:** FINAL.
+{% endif %}
+
+## a) Descrição detalhada do incidente, gravidade e impacto
+
+{{ incident.description }}
+
+{{ incident.impact_summary or "Impacto por consolidar." }}
+
+{% if incident.significant_impact_ended_at %}
+Impacto significativo cessado em **{{ incident.significant_impact_ended_at.strftime("%Y-%m-%d %H:%M") }}** (duração: {{ incident.significant_impact_duration_hours() }} h).
+{% endif %}
+
+## b) Tipo de ameaça / causa raiz
+
+**Tipo de ameaça:** {{ incident.threat_type or "Por classificar." }}
+
+**Causa raiz:** {{ incident.root_cause or "Em investigação." }}
+
+## c) Medidas de mitigação aplicadas e em curso
+
+**Aplicadas:**
+{% for action in incident.mitigation_actions %}
+- {{ action }}
+{% endfor %}
+{% if not incident.mitigation_actions %}
+- Nenhuma ação registada.
+{% endif %}
+
+**Em curso:**
+{% for action in incident.ongoing_mitigation_actions %}
+- {{ action }}
+{% endfor %}
+{% if not incident.ongoing_mitigation_actions %}
+- Nenhuma medida em curso (incidente tratado).
+{% endif %}
+
+## d) Impacto transfronteiriço
+
+{{ "Sim — outras entidades/Estados-Membros foram ou podem ter sido afetados." if incident.cross_border_effect else "Não identificado." }}
+
+## Sistemas e ativos afetados
+
+{% for system in incident.affected_systems %}
+- {{ system }}
+{% endfor %}
+{% if not incident.affected_systems %}
+- Nenhum sistema registado.
+{% endif %}
+
+## Lições aprendidas
+
+{{ incident.lessons_learned or "A consolidar em sede de revisão pós-incidente (controlo REC-03)." }}
+
+---
+*Gerado automaticamente — a submissão na plataforma MyCiber é da responsabilidade do responsável de cibersegurança/ponto de contacto designado.*

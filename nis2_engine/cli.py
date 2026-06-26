@@ -28,6 +28,8 @@ from .reporting import (
     render_gap_report,
     render_html_report,
     render_incident_alert,
+    render_incident_end_of_impact,
+    render_incident_final_report,
     render_incident_report,
     render_incident_response_policy,
     render_iso27001_crosswalk,
@@ -95,6 +97,14 @@ def load_incident(path: Path, entity: Entity) -> IncidentNotification:
         root_cause=raw.get("root_cause", ""),
         mitigation_actions=raw.get("mitigation_actions", []),
         status=raw.get("status", "em_curso"),
+        significant_impact_ended_at=(
+            datetime.fromisoformat(str(raw["significant_impact_ended_at"]))
+            if raw.get("significant_impact_ended_at")
+            else None
+        ),
+        threat_type=raw.get("threat_type", ""),
+        ongoing_mitigation_actions=raw.get("ongoing_mitigation_actions", []),
+        lessons_learned=raw.get("lessons_learned", ""),
     )
 
 
@@ -340,6 +350,12 @@ def cmd_incident(args: argparse.Namespace) -> int:
     (out_dir / "relatorio_detalhado_72h.md").write_text(
         render_incident_report(incident, deadlines), encoding="utf-8"
     )
+    (out_dir / "fim_impacto_significativo.md").write_text(
+        render_incident_end_of_impact(incident, deadlines), encoding="utf-8"
+    )
+    (out_dir / "relatorio_final.md").write_text(
+        render_incident_final_report(incident, deadlines), encoding="utf-8"
+    )
 
     print(f"Incidente:             {incident.incident_id} ({incident.severity})")
     print(f"Detetado em:           {incident.detected_at.isoformat()}")
@@ -347,6 +363,9 @@ def cmd_incident(args: argparse.Namespace) -> int:
     print(f"Prazo alerta inicial:  {deadlines.alerta_inicial.isoformat()}")
     print(f"Prazo relatório 72h:   {deadlines.relatorio_detalhado.isoformat()}")
     print(f"Prazo relatório final: {deadlines.relatorio_final.isoformat()}")
+    duracao = incident.significant_impact_duration_hours()
+    if duracao is not None:
+        print(f"Duração impacto signif.: {duracao} h")
     print(f"Deliverables escritos em: {out_dir}/")
     return 0
 

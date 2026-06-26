@@ -6,6 +6,8 @@ from nis2_engine import (
     SignificanceCriteria,
     assess_significance,
     compute_deadlines,
+    render_incident_end_of_impact,
+    render_incident_final_report,
 )
 
 
@@ -72,3 +74,38 @@ def test_early_warning_and_rgpd_flags():
     )
     assert verdict.obriga_alerta_precoce is True
     assert verdict.aciona_rgpd is True
+
+
+def test_significant_impact_duration_is_hours_between_detection_and_end():
+    detected_at = datetime(2026, 6, 24, 10, 0)
+    incident = _make_incident(detected_at)
+    assert incident.significant_impact_duration_hours() is None
+    incident.significant_impact_ended_at = detected_at + timedelta(hours=30, minutes=30)
+    assert incident.significant_impact_duration_hours() == 30.5
+
+
+def test_render_end_of_impact_includes_article_43_and_duration():
+    detected_at = datetime(2026, 6, 24, 10, 0)
+    incident = _make_incident(detected_at)
+    incident.significant_impact_ended_at = detected_at + timedelta(hours=12)
+    incident.status = "encerrado"
+    md = render_incident_end_of_impact(incident)
+    assert "Art. 43" in md
+    assert "Fim do Impacto Significativo" in md
+    assert "12.0 h" in md
+
+
+def test_render_final_report_is_intercalar_while_open_and_final_when_closed():
+    detected_at = datetime(2026, 6, 24, 10, 0)
+    incident = _make_incident(detected_at)
+    incident.threat_type = "Ransomware"
+    incident.lessons_learned = "Reforçar MFA."
+    open_md = render_incident_final_report(incident)
+    assert "Art. 44" in open_md
+    assert "INTERCALAR" in open_md
+    assert "Ransomware" in open_md
+    assert "Reforçar MFA." in open_md
+
+    incident.status = "encerrado"
+    final_md = render_incident_final_report(incident)
+    assert "FINAL" in final_md
