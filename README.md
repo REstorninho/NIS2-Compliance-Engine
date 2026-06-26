@@ -59,9 +59,10 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
     timestamp; permite listar (`nis2 history`), comparar a evolução de uma
     entidade entre dois assessments (`nis2 progress`) e construir a vista
     agregada da carteira de clientes (`nis2 portfolio`).
-  - `incident.py` — prazos do regime de notificação (24h/72h/1 mês) e a
+  - `incident.py` — prazos do regime de notificação (24h/72h/1 mês), a
     triagem de impacto significativo (Reg. UE 2024/2690, art. 3.º): veredicto
-    fundamentado, gatilho de alerta precoce e acionamento do RGPD/CNPD.
+    fundamentado, gatilho de alerta precoce e acionamento do RGPD/CNPD; e a
+    duração do impacto significativo (deteção → fim) para as fases finais.
   - `charts.py` — gráfico radar (teia) de maturidade por função QNRCS em SVG
     puro, sem dependências externas, pronto a embeber em HTML/markdown.
 - `templates/web/` — formulário HTML self-contained (`nis2 form`) para correr
@@ -87,12 +88,14 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
   de remediação faseado, Statement of Applicability, plano de recolha de
   evidência (deriva do `evidence_contract` de cada controlo), relatório de
   auditoria jurídica, relatório de evolução entre assessments, relatório HTML
-  imprimível (radar embebido + marca do consultor), o alerta inicial (24h) /
-  relatório detalhado (72h) do regime de notificação de incidentes ao CNCS via
-  MyCiber, a **triagem de impacto significativo** do incidente, a **Matriz de
-  Risco** (Anexo II), o **calendário de obrigações**, a **carteira de
-  clientes**, e o **crosswalk dual NIS2 ↔ ISO/IEC 27001/27002:2022** +
-  checklist de documentos obrigatórios do SGSI (ver secção seguinte).
+  imprimível (radar embebido + marca do consultor), o **ciclo completo de
+  notificação de incidentes** ao CNCS via MyCiber — alerta inicial (24h),
+  relatório detalhado (72h), fim do impacto significativo (art. 43.º) e
+  relatório final/intercalar (art. 44.º) —, a **triagem de impacto
+  significativo** do incidente, a **Matriz de Risco** (Anexo II), o
+  **calendário de obrigações**, a **carteira de clientes**, e o **crosswalk
+  dual NIS2 ↔ ISO/IEC 27001/27002:2022** + checklist de documentos
+  obrigatórios do SGSI (ver secção seguinte).
 - `nis2_engine/iso27001.py` — reagrupa o mesmo `AssessmentResult` (sem
   reavaliar nada) pela ótica da ISO/IEC 27001/27002:2022: cobertura por tema
   (Organizacionais/Pessoas/Físicos/Tecnológicos, derivado do prefixo do Anexo
@@ -105,7 +108,7 @@ ficheiros YAML — a primeira exporta YAML que alimenta a segunda.
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (104 testes).
+- `tests/` — testes do motor (109 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -155,7 +158,7 @@ Python. `nis2 --version` mostra a versão instalada.
 | `nis2 progress` | Compara os dois assessments mais recentes e gera o relatório de evolução. |
 | `nis2 portfolio` | Vista agregada da carteira de clientes (nível, score, maturidade, tendência por entidade). |
 | `nis2 deadlines` | Calendário de obrigações da entidade (lista de ativos art. 32.º, relatório anual, designação). |
-| `nis2 incident` | Triagem de impacto significativo + alerta inicial (24h) e relatório detalhado (72h) ao CNCS. |
+| `nis2 incident` | Ciclo completo de notificação ao CNCS: triagem de impacto significativo, alerta inicial (24h), relatório detalhado (72h), fim do impacto significativo (art. 43.º) e relatório final/intercalar (art. 44.º, 1 mês). |
 
 ```bash
 # 0a. Gerar um formulário HTML que corre TODO o fluxo no browser, sem editar

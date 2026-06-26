@@ -164,3 +164,20 @@ class IncidentNotification:
     root_cause: str = ""
     mitigation_actions: list[str] = field(default_factory=list)
     status: str = "em_curso"
+    # Campos das fases finais do regime de notificação:
+    # - fim do impacto significativo (Art. 43.º): momento em que o impacto
+    #   significativo cessou; permite calcular a duração total.
+    # - relatório final (Art. 44.º): tipo de ameaça/causa raiz consolidada,
+    #   medidas de mitigação ainda em curso e lições aprendidas.
+    significant_impact_ended_at: datetime | None = None
+    threat_type: str = ""
+    ongoing_mitigation_actions: list[str] = field(default_factory=list)
+    lessons_learned: str = ""
+
+    def significant_impact_duration_hours(self) -> float | None:
+        """Duração (horas) do impacto significativo, da deteção ao seu fim.
+        None se o fim ainda não estiver registado."""
+        if self.significant_impact_ended_at is None:
+            return None
+        delta = self.significant_impact_ended_at - self.detected_at
+        return round(delta.total_seconds() / 3600, 1)

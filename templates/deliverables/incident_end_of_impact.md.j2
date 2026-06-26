@@ -1,0 +1,45 @@
+# Notificação de Fim do Impacto Significativo — MyCiber
+
+> Comunicação prevista no **Art. 43.º do DL 125/2025**: a entidade comunica ao
+> CNCS o momento em que o impacto significativo do incidente deixou de se
+> verificar.
+
+**Entidade:** {{ incident.entity.name }}
+**ID do incidente (interno):** {{ incident.incident_id }}
+**Data/hora de deteção:** {{ incident.detected_at.strftime("%Y-%m-%d %H:%M") }}
+{% if incident.significant_impact_ended_at %}
+**Fim do impacto significativo:** {{ incident.significant_impact_ended_at.strftime("%Y-%m-%d %H:%M") }}
+**Duração do impacto significativo:** {{ incident.significant_impact_duration_hours() }} h
+{% else %}
+**Fim do impacto significativo:** _por registar — preencher `significant_impact_ended_at` no YAML do incidente._
+{% endif %}
+**Gravidade:** {{ incident.severity | upper }}
+**Estado:** {{ incident.status }}
+
+## Resumo do impacto verificado
+
+{{ incident.impact_summary or "Por preencher." }}
+
+## Situação dos serviços
+
+{% if incident.status in ["encerrado", "resolvido"] %}
+Serviços restabelecidos; o impacto significativo cessou na data acima indicada.
+{% else %}
+Impacto significativo cessado, com medidas de recuperação ainda em consolidação. Ver o relatório final (Art. 44.º).
+{% endif %}
+
+## Medidas de mitigação aplicadas
+
+{% for action in incident.mitigation_actions %}
+- {{ action }}
+{% endfor %}
+{% if not incident.mitigation_actions %}
+- Nenhuma ação registada até ao momento.
+{% endif %}
+
+## Próximo passo
+
+Relatório final a submeter via MyCiber até **{{ deadlines.relatorio_final.strftime("%Y-%m-%d %H:%M") }}** (Art. 44.º).
+
+---
+*Gerado automaticamente — a submissão na plataforma MyCiber é da responsabilidade do responsável de cibersegurança/ponto de contacto designado.*

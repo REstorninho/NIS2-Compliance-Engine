@@ -11,12 +11,24 @@ impact_summary: >
   Avaliação de impacto operacional em curso.
 indicators_of_compromise:
   - 198.51.100.23
-root_cause: ""
+root_cause: >
+  Conta de administração com palavra-passe reutilizada e sem MFA, explorada a
+  partir de credenciais obtidas em fuga de dados de terceiros (PRT-01).
+threat_type: Acesso não autorizado / comprometimento de credenciais
 mitigation_actions:
   - Isolamento do servidor afetado da rede
   - Reposição de credenciais de administração
 cross_border_effect: false
-status: em_curso
+status: encerrado
+# Fases finais do regime: fim do impacto significativo (Art. 43.º) e dados para
+# o relatório final/intercalar (Art. 44.º).
+significant_impact_ended_at: "2026-06-25T15:30:00"
+ongoing_mitigation_actions:
+  - Imposição de MFA em todas as contas privilegiadas (PRT-01)
+  - Revisão de logs de acesso dos últimos 90 dias (DET-03)
+lessons_learned: >
+  Necessária imposição transversal de MFA e deteção de reutilização de
+  credenciais; rever o processo de gestão de acessos privilegiados (PRT-04).
 # Indica se há dados pessoais envolvidos (aciona o regime do RGPD / CNPD).
 dados_pessoais_envolvidos: true
 # Bloco opcional para a triagem de impacto significativo (Reg. UE 2024/2690).

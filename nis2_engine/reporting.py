@@ -258,6 +258,22 @@ def render_incident_report(incident: IncidentNotification, deadlines: Notificati
     return _env().get_template("incident_report_72h.md.j2").render(incident=incident, deadlines=deadlines)
 
 
+def render_incident_end_of_impact(
+    incident: IncidentNotification, deadlines: NotificationDeadlines | None = None
+) -> str:
+    """Notificação de fim do impacto significativo (Art. 43.º DL 125/2025)."""
+    deadlines = deadlines or compute_deadlines(incident)
+    return _env().get_template("incident_end_of_impact.md.j2").render(incident=incident, deadlines=deadlines)
+
+
+def render_incident_final_report(
+    incident: IncidentNotification, deadlines: NotificationDeadlines | None = None
+) -> str:
+    """Relatório final/intercalar de incidente (Art. 44.º DL 125/2025)."""
+    deadlines = deadlines or compute_deadlines(incident)
+    return _env().get_template("incident_final_report.md.j2").render(incident=incident, deadlines=deadlines)
+
+
 def render_risk_matrix(matrix) -> str:
     """Relatório da Matriz de Risco (Anexo II): cenários, valor total, nível
     pela matriz, nível de referência e nível efetivo (agregação art. 30.º)."""
