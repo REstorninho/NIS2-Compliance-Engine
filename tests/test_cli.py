@@ -339,6 +339,24 @@ def test_cli_entity_missing_required_field_returns_friendly_error(tmp_path, caps
     assert "campo obrigatório" in captured.err
 
 
+def test_cli_debug_flag_prints_traceback_on_error(tmp_path, capsys):
+    missing = tmp_path / "nao_existe.yaml"
+    rc = main(["--debug", "classify", str(missing)])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "Traceback (most recent call last):" in captured.err
+    assert "FileNotFoundError" in captured.err
+    assert "não encontrado" in captured.err
+
+
+def test_cli_without_debug_flag_omits_traceback(tmp_path, capsys):
+    missing = tmp_path / "nao_existe.yaml"
+    rc = main(["classify", str(missing)])
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "Traceback" not in captured.err
+
+
 def test_cli_classify_creates_missing_output_directories(tmp_path):
     entity = _write(
         tmp_path / "entity.yaml",
