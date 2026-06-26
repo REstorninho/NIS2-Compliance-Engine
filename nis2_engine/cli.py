@@ -501,6 +501,15 @@ def cmd_profile(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    """Arranca a web app local: introdução de dados por formulário, escolha de
+    deliverables e exportação em Markdown e PDF, reutilizando o motor."""
+    from .webapp import serve
+
+    serve(host=args.host, port=args.port, brand=args.brand, open_browser=not args.no_browser)
+    return 0
+
+
 def cmd_dossier(args: argparse.Namespace) -> int:
     """Agrega os deliverables Markdown de uma pasta num único dossier HTML com
     a marca do consultor (capa + índice + impressão), e opcionalmente exporta
@@ -671,6 +680,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_profile.add_argument("profile_id", help="Id do perfil (ver 'nis2 profiles').")
     p_profile.add_argument("-o", "--output", required=True, help="Pasta onde escrever entity.yaml e scenarios.yaml.")
     p_profile.set_defaults(func=cmd_profile)
+
+    p_serve = sub.add_parser("serve", help="Arranca a web app local (formulário + escolha de deliverables + exportação MD/PDF).")
+    p_serve.add_argument("--host", default="127.0.0.1", help="Host de escuta (por omissão 127.0.0.1).")
+    p_serve.add_argument("--port", type=int, default=8000, help="Porta (por omissão 8000).")
+    p_serve.add_argument("--brand", default="REGENTE", help="Marca/consultor a apresentar na app.")
+    p_serve.add_argument("--no-browser", action="store_true", help="Não abrir o browser automaticamente.")
+    p_serve.set_defaults(func=cmd_serve)
 
     p_dossier = sub.add_parser("dossier", help="Agrega os deliverables Markdown de uma pasta num dossier HTML com marca (e PDF opcional).")
     p_dossier.add_argument("input", help="Pasta com os ficheiros .md (ex.: a saída de 'nis2 assess').")

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>{{ brand }} · NIS2 Web App</title>
+<script id="nis2-config" type="application/json">{{ config_json }}</script>
+<style>
+:root { --accent:#1f4e79; --muted:#666; --border:#d6dbe0; --ok:#1a7f37; --warn:#b5840a; }
+*{box-sizing:border-box}
+body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;margin:0;background:#f4f6f8}
+header{background:var(--accent);color:#fff;padding:16px 28px}
+header .brand{font-size:13px;letter-spacing:2px;text-transform:uppercase;opacity:.85}
+header h1{margin:4px 0 0;font-size:22px}
+main{max-width:920px;margin:0 auto;padding:24px}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:18px}
+.card h2{margin:0 0 14px;font-size:17px;color:var(--accent)}
+.card .num{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;background:var(--accent);color:#fff;border-radius:50%;font-size:13px;margin-right:8px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+input[type=text],input[type=number],select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.row > div{flex:1;min-width:180px}
+.check{display:flex;align-items:center;gap:8px;font-weight:500;margin:8px 0}
+.check input{width:auto}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+th,td{border:1px solid var(--border);padding:5px 7px;text-align:left}
+th{background:#eef2f6}
+td input{border:0;width:100%;padding:4px}
+td.num input{text-align:center}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.btn.secondary{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+.btn-x{background:#fbe9e9;color:#a11;border:0;border-radius:6px;padding:4px 10px;cursor:pointer}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.ambito{background:#fff7e6;border:1px solid #f0d48a;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:10px;display:none}
+.deliv-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.q-group h3{font-size:14px;color:var(--accent);margin:14px 0 6px;border-bottom:1px solid var(--border)}
+.q-row{display:flex;align-items:center;gap:10px;padding:3px 0;font-size:13px}
+.q-row .qid{font-family:monospace;color:var(--muted);min-width:64px}
+.q-row .qtitle{flex:1}
+.q-row select{width:auto;min-width:150px}
+#questionnaire{display:none}
+footer{max-width:920px;margin:0 auto;padding:8px 24px 40px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">{{ brand }}</div>
+  <h1>Copiloto de Conformidade NIS2 — Web App</h1>
+</header>
+<main>
+<form method="POST" action="/generate" id="form">
+
+  <div class="card">
+    <h2><span class="num">1</span>Entidade</h2>
+    <div class="row">
+      <div>
+        <label>Perfil setorial (preenchimento rápido)</label>
+        <select id="profile">
+          <option value="">— começar do zero —</option>
+        </select>
+        <div class="hint">Escolhe um vertical (autarquia, junta, hotelaria, turismo) para pré-preencher os campos e cenários.</div>
+      </div>
+    </div>
+    <div id="ambito" class="ambito"></div>
+    <div class="row">
+      <div><label>Nome</label><input type="text" name="name" id="name" placeholder="Nome da entidade"/></div>
+      <div><label>Setor</label><select name="sector" id="sector"></select></div>
+    </div>
+    <div class="row">
+      <div><label>Nº de trabalhadores</label><input type="number" name="employees" id="employees" min="0" value="0"/></div>
+      <div><label>Volume de negócios anual (€)</label><input type="number" name="turnover" id="turnover" min="0" value="0"/></div>
+      <div>
+        <label>Override de nível (opcional)</label>
+        <select name="level" id="level">
+          <option value="">— automático —</option>
+          <option value="basico">Básico</option>
+          <option value="substancial">Substancial</option>
+          <option value="elevado">Elevado</option>
+        </select>
+      </div>
+    </div>
+    <div class="check"><input type="checkbox" name="is_public_body" id="is_public_body" value="1"/><label for="is_public_body" style="margin:0">Organismo da administração pública</label></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">2</span>Cenários de risco (Matriz — Anexo II)</h2>
+    <table id="scn-table">
+      <thead><tr><th>Cenário</th><th>Ator de ameaça</th><th style="width:90px">Prob. (1-5)</th><th style="width:90px">Impacto (1-5)</th><th style="width:50px"></th></tr></thead>
+      <tbody id="scn-rows"></tbody>
+    </table>
+    <p><button type="button" class="btn secondary" id="add-scn">+ Adicionar cenário</button></p>
+    <div class="hint">Deixa vazio se não quiseres a Matriz de Risco. O nível efetivo agrega a matriz com o tipo de entidade (art. 30.º).</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">3</span>Autoavaliação de maturidade</h2>
+    <div class="check"><input type="checkbox" id="include_assessment" name="include_assessment" value="1"/><label for="include_assessment" style="margin:0">Incluir autoavaliação (gera gap analysis, roadmap, SoA, evidência, crosswalk ISO)</label></div>
+    <div id="questionnaire"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">4</span>Deliverables a gerar</h2>
+    <div class="deliv-grid" id="deliv-grid"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">5</span>Gerar</h2>
+    <p class="hint">Os outputs são gerados pelo motor no servidor. Na página seguinte podes descarregar em <strong>Markdown</strong> (individual ou .zip) e em <strong>PDF</strong> (dossier com a tua marca).</p>
+    <button type="submit" class="btn">Gerar deliverables →</button>
+  </div>
+
+</form>
+</main>
+<footer>Documento de apoio à decisão — não substitui aconselhamento jurídico nem a decisão da autoridade competente.</footer>
+
+<script>
+var CFG = JSON.parse(document.getElementById('nis2-config').textContent);
+function el(id){return document.getElementById(id);}
+
+// --- Setores ---
+CFG.sectors.forEach(function(s){
+  var o=document.createElement('option');o.value=s.value;o.textContent=s.label;el('sector').appendChild(o);
+});
+
+// --- Perfis ---
+CFG.profiles.forEach(function(p){
+  var o=document.createElement('option');o.value=p.id;o.textContent=p.nome;el('profile').appendChild(o);
+});
+
+// --- Deliverables ---
+CFG.deliverables.forEach(function(d){
+  var wrap=document.createElement('label');wrap.className='check';
+  var cb=document.createElement('input');cb.type='checkbox';cb.name='deliv';cb.value=d.id;cb.checked=true;
+  cb.setAttribute('data-assessment', d.assessment ? '1':'0');
+  var span=document.createElement('span');span.textContent=d.label + (d.assessment ? ' (autoavaliação)':'');
+  wrap.appendChild(cb);wrap.appendChild(span);el('deliv-grid').appendChild(wrap);
+});
+
+// --- Cenários ---
+function scnRow(s){
+  s=s||{name:'',actor:'',prob:3,impacto:3};
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><input name="scn_name" value="'+esc(s.name)+'"/></td>'+
+    '<td><input name="scn_actor" value="'+esc(s.actor||'')+'"/></td>'+
+    '<td class="num"><input name="scn_prob" type="number" min="1" max="5" value="'+(s.prob||3)+'"/></td>'+
+    '<td class="num"><input name="scn_impact" type="number" min="1" max="5" value="'+(s.impacto||3)+'"/></td>'+
+    '<td><button type="button" class="btn-x">×</button></td>';
+  tr.querySelector('.btn-x').addEventListener('click',function(){tr.remove();});
+  return tr;
+}
+function esc(s){return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+el('add-scn').addEventListener('click',function(){el('scn-rows').appendChild(scnRow());});
+el('scn-rows').appendChild(scnRow({name:'Ransomware',actor:'Cibercrime organizado',prob:4,impacto:5}));
+
+// --- Questionário ---
+function buildQuestionnaire(){
+  var byFn={};
+  CFG.radar_order.forEach(function(fn){byFn[fn]=[];});
+  CFG.controls.forEach(function(c){ (byFn[c.fn]=byFn[c.fn]||[]).push(c); });
+  var html='';
+  CFG.radar_order.forEach(function(fn){
+    if(!byFn[fn]||!byFn[fn].length)return;
+    html+='<div class="q-group"><h3>'+fn+'</h3>';
+    byFn[fn].forEach(function(c){
+      var opts='';
+      for(var i=0;i<=5;i++){opts+='<option value="'+i+'">'+i+' · '+CFG.maturity_labels[String(i)]+'</option>';}
+      html+='<div class="q-row"><span class="qid">'+c.id+'</span><span class="qtitle">'+c.title+'</span>'+
+        '<select name="mat_'+c.id+'">'+opts+'</select></div>';
+    });
+    html+='</div>';
+  });
+  el('questionnaire').innerHTML=html;
+}
+buildQuestionnaire();
+el('include_assessment').addEventListener('change',function(){
+  el('questionnaire').style.display=this.checked?'block':'none';
+});
+
+// --- Prefil por perfil ---
+function applyProfile(p){
+  el('name').value=p.nome||'';
+  el('sector').value=p.setor||'outro';
+  el('employees').value=p.employees||0;
+  el('turnover').value=p.turnover||0;
+  el('is_public_body').checked=!!p.is_public_body;
+  if(p.nivel_sugerido){el('level').value=p.nivel_sugerido;}
+  // cenários
+  el('scn-rows').innerHTML='';
+  (p.scenarios||[]).forEach(function(s){el('scn-rows').appendChild(scnRow(s));});
+  if(!(p.scenarios||[]).length){el('scn-rows').appendChild(scnRow());}
+  // nota de âmbito
+  if(p.ambito_nota){el('ambito').style.display='block';el('ambito').textContent='Âmbito: '+p.ambito_nota;}
+  else{el('ambito').style.display='none';}
+}
+el('profile').addEventListener('change',function(){
+  var id=this.value;
+  if(!id){el('ambito').style.display='none';return;}
+  var p=CFG.profiles.filter(function(x){return x.id===id;})[0];
+  if(p)applyProfile(p);
+});
+</script>
+</body>
+</html>
