@@ -34,6 +34,14 @@ from .risk_matrix import (
     most_demanding,
 )
 from .deadlines import Obligation, build_obligations_calendar
+from .dossier import (
+    DossierSection,
+    build_dossier_html,
+    collect_sections,
+    md_to_html,
+    render_pdf,
+)
+from .profiles import ProfileScenario, SectorProfile, get_profile, load_profiles
 from .classification import required_compliance_level
 from .roadmap import build_remediation_roadmap, RemediationRoadmap, RoadmapPhase
 from .audit import build_audit_report, build_validation_checklist, AuditReport, VALIDATION_CHECKLIST_FIELDS
@@ -109,6 +117,15 @@ __all__ = [
     "most_demanding",
     "Obligation",
     "build_obligations_calendar",
+    "ProfileScenario",
+    "SectorProfile",
+    "get_profile",
+    "load_profiles",
+    "DossierSection",
+    "build_dossier_html",
+    "collect_sections",
+    "md_to_html",
+    "render_pdf",
     "PortfolioEntry",
     "build_portfolio",
     "load_controls",

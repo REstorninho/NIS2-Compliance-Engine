@@ -1,0 +1,40 @@
+id: agencia_viagens
+nome: Agência de Viagens / Operador Turístico
+descricao: >
+  Agência de viagens ou operador turístico. Tal como a hotelaria, o turismo não
+  consta dos anexos do DL 125/2025 — âmbito apenas indireto.
+setor: turismo
+entidade:
+  employees: 40
+  annual_turnover_eur: 9000000
+  is_public_body: false
+ambito_nota: >
+  ATENÇÃO: o turismo NÃO é um setor dos Anexos I/II do DL 125/2025. A
+  classificação setorial direta resulta FORA DE ÂMBITO. A entidade só fica
+  abrangida INDIRETAMENTE como fornecedora/subcontratada de uma entidade
+  essencial ou importante (Art. 21(2)(d) — cadeia de abastecimento). Use o
+  nível BÁSICO como referência voluntária para a linha de base de boas práticas.
+nivel_referencia_sugerido: basico
+ativos_criticos:
+  - Plataforma de reservas e sistema de bilhética
+  - Dados pessoais e de pagamento de clientes (RGPD / PCI-DSS)
+  - Integrações com GDS, companhias aéreas e fornecedores
+  - Correio eletrónico e canais de atendimento
+cenarios:
+  - name: Fraude por comprometimento de email (BEC)
+    threat_actor: Cibercrime organizado
+    probabilidade: 4
+    impacto: 4
+    description: >
+      Interceção/manipulação de comunicações de pagamento com fornecedores ou
+      clientes (business email compromise).
+  - name: Roubo de dados pessoais e de pagamento de clientes
+    threat_actor: Cibercrime organizado
+    probabilidade: 3
+    impacto: 4
+    description: >
+      Exfiltração de dados de clientes a partir da plataforma de reservas,
+      acionando RGPD e responsabilidade contratual.
+notas:
+  - "Reforçar autenticação e verificação de alterações de IBAN/pagamentos (anti-BEC) — PRT-01, PRT-11."
+  - "Linha de base voluntária ao nível BÁSICO; subir conforme exigências contratuais dos clientes abrangidos."

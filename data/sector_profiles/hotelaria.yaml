@@ -1,0 +1,55 @@
+id: hotelaria
+nome: Hotelaria / Grupo Hoteleiro
+descricao: >
+  Unidade ou grupo hoteleiro. O turismo/hotelaria NÃO consta dos Anexos I/II do
+  DL 125/2025 — só entra em âmbito por via indireta (cadeia de abastecimento).
+setor: hotelaria
+entidade:
+  employees: 120
+  annual_turnover_eur: 18000000
+  is_public_body: false
+# Âmbito: NÃO é setor dos anexos. A classificação setorial direta devolve
+# "fora de âmbito". Em rigor, só fica abrangida indiretamente.
+ambito_nota: >
+  ATENÇÃO: a hotelaria NÃO é um setor dos Anexos I/II do DL 125/2025. A
+  classificação setorial direta resulta FORA DE ÂMBITO. A entidade só fica
+  abrangida INDIRETAMENTE quando é fornecedora/subcontratada de uma entidade
+  essencial ou importante, por via da gestão de risco da cadeia de
+  abastecimento (Art. 21(2)(d)) dessa entidade — que lhe impõe requisitos
+  contratuais de cibersegurança. O valor deste perfil é (a) preparar a entidade
+  para responder a esses requisitos contratuais e (b) adotar uma linha de base
+  voluntária de boas práticas. Use o nível BÁSICO como referência voluntária.
+nivel_referencia_sugerido: basico
+ativos_criticos:
+  - PMS (Property Management System) e motor de reservas
+  - Terminais de pagamento (PCI-DSS) e dados de cartão
+  - Dados pessoais de hóspedes (RGPD)
+  - Wi-Fi de hóspedes e rede interna (segmentação)
+  - Sistemas de fechaduras eletrónicas / domótica
+  - Canais de distribuição e integrações (OTA, channel manager)
+cenarios:
+  - name: Roubo de dados de cartão de hóspedes
+    threat_actor: Cibercrime organizado
+    probabilidade: 4
+    impacto: 5
+    description: >
+      Comprometimento de terminais ou do PMS com captura de dados de pagamento,
+      com responsabilidade contratual (PCI-DSS) e reputacional.
+  - name: Ransomware no PMS / motor de reservas
+    threat_actor: Cibercrime organizado
+    probabilidade: 4
+    impacto: 4
+    description: >
+      Indisponibilidade do sistema central de reservas e check-in, com paragem
+      operacional da unidade.
+  - name: Acesso indevido via Wi-Fi de hóspedes não segmentado
+    threat_actor: Atacante oportunista
+    probabilidade: 3
+    impacto: 3
+    description: >
+      Movimento lateral da rede de hóspedes para a rede administrativa por falta
+      de segmentação (PRT-03).
+notas:
+  - "Mapear que clientes/contratos são entidades essenciais/importantes — é a porta de entrada no âmbito."
+  - "Preparar dossier de cibersegurança para due diligence de clientes (questionários de fornecedor)."
+  - "Linha de base voluntária: MFA (PRT-01), segmentação da rede de hóspedes (PRT-03), cópias testadas (PRT-10)."

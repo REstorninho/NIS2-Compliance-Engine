@@ -64,6 +64,8 @@ pytest
   com o crosswalk NIS2 ↔ QNRCS ↔ ISO 27001 ↔ CIS ↔ RGPD, o nível mínimo exigido
   (básico/substancial/elevado) e o tipo de evidência esperado.
 - `data/schema/control.schema.json` — JSON Schema de validação dos controlos.
+- `data/sector_profiles/` — perfis setoriais pré-preenchidos em YAML (um por
+  vertical: autarquia, junta de freguesia, hotelaria, turismo).
 - `nis2_engine/` — motor Python (sem UI):
   - `models.py` — dataclasses (`Control`, `Entity`, `AssessmentAnswer`, ...).
   - `loader.py` — carrega e valida os controlos a partir de `data/controls/`.
@@ -103,6 +105,17 @@ pytest
     duração do impacto significativo (deteção → fim) para as fases finais.
   - `charts.py` — gráfico radar (teia) de maturidade por função QNRCS em SVG
     puro, sem dependências externas, pronto a embeber em HTML/markdown.
+  - `profiles.py` — perfis setoriais pré-preenchidos (autarquias, juntas de
+    freguesia, hotelaria, turismo): entidade tipo, cenários de risco habituais,
+    ativos críticos, notas de prioridade e **nota de âmbito** (decisiva para os
+    verticais que só entram em âmbito indiretamente). Os perfis são dados
+    (`data/sector_profiles/*.yaml`), não código: `nis2 profile <id>` materializa
+    `entity.yaml` + `scenarios.yaml` prontos a alimentar `nis2 risk`/`assess`.
+  - `dossier.py` — agrega os deliverables Markdown num único **dossier HTML**
+    com a marca do consultor (capa + índice + `@media print` com quebras de
+    página), pronto a "Imprimir → Guardar como PDF". Conversor de Markdown
+    próprio (subconjunto dos templates), zero dependências novas; `--pdf`
+    exporta PDF de forma oportunista (weasyprint ou Chromium, se disponíveis).
 - `templates/web/` — formulário HTML self-contained (`nis2 form`) para correr
   todo o fluxo no browser, sem servidor: (1) **classificação de âmbito** em
   tempo real (replica `classify_entity`); (2) **Matriz de Risco** (Anexo II) —
@@ -146,7 +159,7 @@ pytest
 - `templates/policies/` — pacote de políticas/procedimentos chave que servem
   de evidência documental: resposta a incidentes, segurança de fornecedores e
   continuidade de negócio/BC-DR.
-- `tests/` — testes do motor (109 testes).
+- `tests/` — testes do motor (122 testes).
 - `examples/demo_deliverables.py` — demo end-to-end: classificação →
   assessment → SoA → alerta de incidente.
 
@@ -185,6 +198,8 @@ devolvem uma mensagem clara em `stderr` e código de saída 1 — não um
 | Comando | O que faz |
 |---|---|
 | `nis2 form` | Gera o formulário HTML que corre classificação + autoavaliação de maturidade + roadmap no browser (com histórico local). |
+| `nis2 profiles` | Lista os perfis setoriais pré-preenchidos (autarquias, juntas de freguesia, hotelaria, turismo). |
+| `nis2 profile` | Materializa um perfil setorial em `entity.yaml` + `scenarios.yaml` prontos a usar, com a nota de âmbito do setor. |
 | `nis2 list-controls` | Lista o catálogo de controlos QNRCS (filtrável por `--level`/`--function`). |
 | `nis2 classify` | Classifica a entidade e gera o relatório de autoidentificação MyCiber. |
 | `nis2 risk` | Aplica a Matriz de Risco (Anexo II) a cenários e determina o nível exigido (matriz + agregação art. 30.º). |
@@ -197,6 +212,7 @@ devolvem uma mensagem clara em `stderr` e código de saída 1 — não um
 | `nis2 portfolio` | Vista agregada da carteira de clientes (nível, score, maturidade, tendência por entidade). |
 | `nis2 deadlines` | Calendário de obrigações da entidade (lista de ativos art. 32.º, relatório anual, designação). |
 | `nis2 incident` | Ciclo completo de notificação ao CNCS: triagem de impacto significativo, alerta inicial (24h), relatório detalhado (72h), fim do impacto significativo (art. 43.º) e relatório final/intercalar (art. 44.º, 1 mês). |
+| `nis2 dossier` | Agrega os deliverables Markdown de uma pasta num dossier HTML com a marca do consultor (capa + índice + impressão); `--pdf` exporta PDF se houver motor disponível. |
 
 ```bash
 # 0a. Gerar um formulário HTML que corre TODO o fluxo no browser, sem editar
@@ -208,6 +224,13 @@ nis2 form -o out/classificador.html --brand "Acme CyberSec"
 # 0b. Consultar o catálogo de controlos QNRCS antes de preencher o entity.yaml
 #     (filtrável por --level ou --function)
 nis2 list-controls --level substancial
+
+# 0c. (Atalho por setor) Partir de um perfil pré-preenchido em vez de escrever
+#     o entity.yaml do zero. Gera entity.yaml + scenarios.yaml e mostra a nota
+#     de âmbito do setor (ex.: hotelaria/turismo só entram em âmbito indireto).
+nis2 profiles
+nis2 profile camara_municipal -o out/camara
+nis2 risk out/camara/entity.yaml out/camara/scenarios.yaml
 
 # 1. Classificar a entidade e gerar o relatório de autoidentificação MyCiber
 nis2 classify examples/entity_camara.yaml -o out/self_identification.md
@@ -251,6 +274,12 @@ nis2 incident examples/entity_camara.yaml examples/incident_camara.yaml -o out/i
 # 8. Gerar o calendário de obrigações da entidade a partir da data de
 #    qualificação/notificação (lista de ativos art. 32.º, relatório anual, ...)
 nis2 deadlines examples/entity_camara.yaml --since 2026-03-01 -o out/calendario.md
+
+# 9. Agregar todos os deliverables Markdown da pasta num dossier HTML com a
+#    marca do consultor (capa + índice), pronto a imprimir/guardar como PDF.
+#    --pdf tenta exportar o PDF diretamente (weasyprint ou Chromium, se houver).
+nis2 dossier out/ -o out/dossier.html --brand "Acme CyberSec" \
+  --title "Relatório de Conformidade NIS2 — Câmara de Exemplo" --pdf
 ```
 
 > O relatório HTML (`out/report.html`) é self-contained e imprimível para PDF

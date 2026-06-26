@@ -13,11 +13,13 @@ from .assessment import run_assessment
 from .audit import build_audit_report, build_validation_checklist
 from .classification import classify_entity, required_compliance_level
 from .deadlines import build_obligations_calendar
+from .dossier import build_dossier_html, collect_sections, render_pdf
 from .history import build_portfolio, build_snapshot, compare_snapshots, load_snapshots, save_snapshot
 from .incident import SignificanceCriteria, assess_significance, compute_deadlines
 from .iso27001 import build_iso27001_crosswalk
 from .loader import load_controls
 from .models import AssessmentAnswer, ComplianceLevel, Entity, EntityType, IncidentNotification
+from .profiles import get_profile, load_profiles
 from .risk_matrix import RiskScenario, build_risk_matrix, most_demanding
 from .reporting import (
     render_audit_report,
@@ -441,6 +443,95 @@ def cmd_portfolio(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_profiles(args: argparse.Namespace) -> int:
+    """Lista os perfis setoriais pré-preenchidos disponíveis (autarquias,
+    juntas de freguesia, hotelaria, turismo)."""
+    profiles = load_profiles()
+    if not profiles:
+        print("Sem perfis setoriais disponíveis.", file=sys.stderr)
+        return 1
+    print(f"Perfis setoriais disponíveis ({len(profiles)}):\n")
+    for p in profiles:
+        ambito = "público" if p.is_public_body else "privado"
+        print(f"  {p.id:<18} {p.nome}  ({p.setor}, {ambito})")
+        print(f"  {'':<18} {p.descricao.splitlines()[0] if p.descricao else ''}")
+    print('\nUse: nis2 profile <id> -o <pasta>  para gerar entity.yaml + scenarios.yaml.')
+    return 0
+
+
+def cmd_profile(args: argparse.Namespace) -> int:
+    """Materializa um perfil setorial: escreve `entity.yaml` e `scenarios.yaml`
+    prontos a alimentar `nis2 risk` / `nis2 assess --risk`, e imprime a nota de
+    âmbito e as notas de prioridade do setor."""
+    try:
+        profile = get_profile(args.profile_id)
+    except KeyError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    out_dir = Path(args.output)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    entity_path = out_dir / "entity.yaml"
+    scenarios_path = out_dir / "scenarios.yaml"
+    entity_path.write_text(
+        yaml.safe_dump(profile.entity_dict(), allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
+    scenarios_path.write_text(
+        yaml.safe_dump(profile.scenarios_dict(), allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
+
+    print(f"Perfil: {profile.nome} ({profile.id})\n")
+    if profile.ambito_nota:
+        print("Âmbito:")
+        print(f"  {profile.ambito_nota.strip()}\n")
+    if profile.nivel_referencia_sugerido:
+        print(f"Nível de referência sugerido: {profile.nivel_referencia_sugerido}\n")
+    if profile.ativos_criticos:
+        print("Ativos críticos típicos:")
+        for a in profile.ativos_criticos:
+            print(f"  - {a}")
+        print()
+    if profile.notas:
+        print("Notas de prioridade:")
+        for n in profile.notas:
+            print(f"  - {n}")
+        print()
+    print(f"Ficheiros gerados:\n  {entity_path}\n  {scenarios_path}")
+    print(f"\nPróximo passo: nis2 risk {entity_path} {scenarios_path}")
+    return 0
+
+
+def cmd_dossier(args: argparse.Namespace) -> int:
+    """Agrega os deliverables Markdown de uma pasta num único dossier HTML com
+    a marca do consultor (capa + índice + impressão), e opcionalmente exporta
+    PDF (`--pdf`) se houver um motor disponível."""
+    md_dir = Path(args.input)
+    if not md_dir.is_dir():
+        print(f"Pasta não encontrada: {md_dir}", file=sys.stderr)
+        return 1
+    sections = collect_sections(md_dir)
+    if not sections:
+        print(f"Sem ficheiros .md em {md_dir}/.", file=sys.stderr)
+        return 1
+
+    html_doc = build_dossier_html(args.title, sections, brand=args.brand)
+    out_html = Path(args.output)
+    _write_output(out_html, html_doc)
+    print(f"Dossier ({len(sections)} secções) escrito em: {out_html}")
+
+    if args.pdf:
+        pdf_path = out_html.with_suffix(".pdf")
+        if render_pdf(html_doc, pdf_path):
+            print(f"PDF gerado em: {pdf_path}")
+        else:
+            print(
+                "Sem motor de PDF disponível (weasyprint/Chromium). "
+                f"Abra {out_html} no browser e use Imprimir → Guardar como PDF.",
+                file=sys.stderr,
+            )
+    return 0
+
+
 def cmd_policies(args: argparse.Namespace) -> int:
     """Gera o pacote de políticas/procedimentos chave (evidência documental)
     para a entidade: resposta a incidentes, segurança de fornecedores e
@@ -572,6 +663,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_portfolio.add_argument("--history-dir", required=True, help="Diretório com os snapshots gravados por 'nis2 assess --history-dir'.")
     p_portfolio.add_argument("-o", "--output", help="Caminho para escrever a carteira (markdown).")
     p_portfolio.set_defaults(func=cmd_portfolio)
+
+    p_profiles = sub.add_parser("profiles", help="Lista os perfis setoriais pré-preenchidos (autarquias, juntas, hotelaria, turismo).")
+    p_profiles.set_defaults(func=cmd_profiles)
+
+    p_profile = sub.add_parser("profile", help="Materializa um perfil setorial em entity.yaml + scenarios.yaml prontos a usar.")
+    p_profile.add_argument("profile_id", help="Id do perfil (ver 'nis2 profiles').")
+    p_profile.add_argument("-o", "--output", required=True, help="Pasta onde escrever entity.yaml e scenarios.yaml.")
+    p_profile.set_defaults(func=cmd_profile)
+
+    p_dossier = sub.add_parser("dossier", help="Agrega os deliverables Markdown de uma pasta num dossier HTML com marca (e PDF opcional).")
+    p_dossier.add_argument("input", help="Pasta com os ficheiros .md (ex.: a saída de 'nis2 assess').")
+    p_dossier.add_argument("-o", "--output", required=True, help="Caminho do dossier HTML a escrever.")
+    p_dossier.add_argument("--title", default="Relatório de Conformidade NIS2", help="Título na capa do dossier.")
+    p_dossier.add_argument("--brand", default="REGENTE", help="Marca/consultor a apresentar na capa e rodapé.")
+    p_dossier.add_argument("--pdf", action="store_true", help="Tentar exportar também PDF (weasyprint/Chromium se disponíveis).")
+    p_dossier.set_defaults(func=cmd_dossier)
 
     p_progress = sub.add_parser("progress", help="Compara os dois assessments mais recentes de uma entidade e gera um relatório de evolução.")
     p_progress.add_argument("entity", help="Nome da entidade (igual ao usado no perfil YAML).")
