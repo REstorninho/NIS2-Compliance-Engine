@@ -20,7 +20,7 @@ import zipfile
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from .assessment import run_assessment
 from .classification import classify_entity, required_compliance_level
@@ -74,12 +74,26 @@ class GenerationResult:
     avisos: list[str]
 
 
+def _to_int(value, label: str) -> int:
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        raise ValueError(f"O campo '{label}' tem de ser um número inteiro (recebido: {value!r}).")
+
+
+def _to_float(value, label: str) -> float:
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        raise ValueError(f"O campo '{label}' tem de ser um número (recebido: {value!r}).")
+
+
 def _entity_from_form(form: dict) -> Entity:
     return Entity(
         name=(form.get("name") or "Entidade sem nome").strip(),
         sector=(form.get("sector") or "outro").strip(),
-        employees=int(form.get("employees") or 0),
-        annual_turnover_eur=float(form.get("turnover") or 0),
+        employees=_to_int(form.get("employees"), "Nº de trabalhadores"),
+        annual_turnover_eur=_to_float(form.get("turnover"), "Volume de negócios"),
         is_public_body=bool(form.get("is_public_body")),
     )
 
@@ -323,7 +337,7 @@ def _make_handler(brand: str):
             if len(parts) < 4:
                 self._send(b"Not found", status=404, content_type="text/plain; charset=utf-8")
                 return
-            sid, name = parts[2], parts[3]
+            sid, name = parts[2], unquote(parts[3])
             session_dir = _SESSIONS.get(sid)
             if not session_dir:
                 self._send("Sessão expirada".encode("utf-8"), status=404, content_type="text/plain; charset=utf-8")
