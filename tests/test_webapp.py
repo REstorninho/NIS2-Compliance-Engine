@@ -1,3 +1,5 @@
+import pytest
+
 from nis2_engine.webapp import build_app_config, generate_deliverables
 
 
@@ -53,6 +55,15 @@ def test_generate_with_assessment_produces_gap_and_score(tmp_path):
     assert "gap_report.md" in res.files
     assert "roadmap.md" in res.files
     assert (tmp_path / "report.html").exists()
+
+
+def test_generate_invalid_numeric_field_raises_friendly_error(tmp_path):
+    form = _base_form(employees="abc")
+    with pytest.raises(ValueError) as exc:
+        generate_deliverables(form, tmp_path)
+    # Mensagem amigável (nome do campo), não o erro cru do int().
+    assert "Nº de trabalhadores" in str(exc.value)
+    assert "literal" not in str(exc.value)
 
 
 def test_generate_out_of_scope_tourism_falls_back_to_basico(tmp_path):

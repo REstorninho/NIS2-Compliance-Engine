@@ -160,12 +160,12 @@ function buildQuestionnaire(){
   var html='';
   CFG.radar_order.forEach(function(fn){
     if(!byFn[fn]||!byFn[fn].length)return;
-    html+='<div class="q-group"><h3>'+fn+'</h3>';
+    html+='<div class="q-group"><h3>'+esc(fn)+'</h3>';
     byFn[fn].forEach(function(c){
       var opts='';
-      for(var i=0;i<=5;i++){opts+='<option value="'+i+'">'+i+' · '+CFG.maturity_labels[String(i)]+'</option>';}
-      html+='<div class="q-row"><span class="qid">'+c.id+'</span><span class="qtitle">'+c.title+'</span>'+
-        '<select name="mat_'+c.id+'">'+opts+'</select></div>';
+      for(var i=0;i<=5;i++){opts+='<option value="'+i+'">'+i+' · '+esc(CFG.maturity_labels[String(i)])+'</option>';}
+      html+='<div class="q-row"><span class="qid">'+esc(c.id)+'</span><span class="qtitle">'+esc(c.title)+'</span>'+
+        '<select name="mat_'+esc(c.id)+'">'+opts+'</select></div>';
     });
     html+='</div>';
   });
@@ -192,7 +192,10 @@ function applyProfile(p){
   el('employees').value=p.employees||0;
   el('turnover').value=p.turnover||0;
   el('is_public_body').checked=!!p.is_public_body;
-  if(p.nivel_sugerido){el('level').value=p.nivel_sugerido;}
+  // Repõe sempre o override: perfis sem nível sugerido (autarquias/juntas, cujo
+  // nível é derivado automaticamente) não devem herdar o nível de um perfil
+  // escolhido antes.
+  el('level').value=p.nivel_sugerido||'';
   // cenários
   el('scn-rows').innerHTML='';
   (p.scenarios||[]).forEach(function(s){el('scn-rows').appendChild(scnRow(s));});
